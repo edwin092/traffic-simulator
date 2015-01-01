@@ -3,13 +3,25 @@ package com.utcn.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Segment {
+import javax.swing.JButton;
+
+public class Segment extends JButton {
+
+	private static final long serialVersionUID = 1L;
 
 	private List<Vehicle> vehicles;
 	private int length = 20;
 	// legatura intersectii
-	private Intersection intersectionVest;
-	private Intersection intersectionEast;
+	private Intersection intersectionIn;
+	private Intersection intersectionOut;
+	/**
+	 * If way = true then [Intersection ->] else [-> Intersection]
+	 */
+	private boolean way;
+
+	// polyline coordinates
+	private int[] lineCoordsX;
+	private int[] lineCoordsY;
 
 	public Segment() {
 		vehicles = new ArrayList<Vehicle>();
@@ -31,19 +43,43 @@ public class Segment {
 		this.length = length;
 	}
 
-	public Intersection getIntersectionVest() {
-		return intersectionVest;
+	public Intersection getIntersectionIn() {
+		return intersectionIn;
 	}
 
-	public void setIntersectionVest(Intersection intersectionVest) {
-		this.intersectionVest = intersectionVest;
+	public void setIntersectionIn(Intersection intersectionIn) {
+		this.intersectionIn = intersectionIn;
 	}
 
-	public Intersection getIntersectionEast() {
-		return intersectionEast;
+	public Intersection getIntersectionOut() {
+		return intersectionOut;
 	}
 
-	public void setIntersectionEast(Intersection intersectionEast) {
-		this.intersectionEast = intersectionEast;
+	public void setIntersectionOut(Intersection intersectionOut) {
+		this.intersectionOut = intersectionOut;
+	}
+
+	public boolean isWay() {
+		return way;
+	}
+
+	public void setWay(boolean way) {
+		this.way = way;
+	}
+
+	public int[] getLineCoordsX() {
+		return lineCoordsX;
+	}
+
+	public void setLineCoordsX(int[] lineCoordsX) {
+		this.lineCoordsX = lineCoordsX;
+	}
+
+	public int[] getLineCoordsY() {
+		return lineCoordsY;
+	}
+
+	public void setLineCoordsY(int[] lineCoordsY) {
+		this.lineCoordsY = lineCoordsY;
 	}
 }

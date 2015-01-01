@@ -1,20 +1,31 @@
 package com.utcn.models;
 
-public class Intersection {
+import javax.swing.JButton;
+
+public class Intersection extends JButton {
+
+	private static final long serialVersionUID = 1L;
 
 	// semafoare din intersectie: true-verde, false-rosu
 	private boolean trafficLightNorth;
 	private boolean trafficLightSouth;
 	private boolean trafficLightVest;
 	private boolean trafficLightEast;
-	private int phases = 4; // 4 faze
+
+	/* phases */
+	private int phases = 4; // 4 phases
 	private int currentPhase = 1;
 	private int phaseCounter;
-	// liste tronsoane
-	private Segment segmentNorth;
-	private Segment segmentSouth;
-	private Segment segmentVest;
-	private Segment segmentEast;
+
+	/* segments */
+	private Segment segmentNorthIn;
+	private Segment segmentNorthOut;
+	private Segment segmentSouthIn;
+	private Segment segmentSouthOut;
+	private Segment segmentVestIn;
+	private Segment segmentVestOut;
+	private Segment segmentEastIn;
+	private Segment segmentEastOut;
 
 	public boolean isTrafficLightNorth() {
 		return trafficLightNorth;
@@ -48,36 +59,72 @@ public class Intersection {
 		this.trafficLightEast = trafficLightEast;
 	}
 
-	public Segment getSegmentNorth() {
-		return segmentNorth;
+	public Segment getSegmentNorthIn() {
+		return segmentNorthIn;
 	}
 
-	public void setSegmentNorth(Segment segmentNorth) {
-		this.segmentNorth = segmentNorth;
+	public void setSegmentNorthIn(Segment segmentNorthIn) {
+		this.segmentNorthIn = segmentNorthIn;
 	}
 
-	public Segment getSegmentSouth() {
-		return segmentSouth;
+	public Segment getSegmentNorthOut() {
+		return segmentNorthOut;
 	}
 
-	public void setSegmentSouth(Segment segmentSouth) {
-		this.segmentSouth = segmentSouth;
+	public void setSegmentNorthOut(Segment segmentNorthOut) {
+		this.segmentNorthOut = segmentNorthOut;
 	}
 
-	public Segment getSegmentVest() {
-		return segmentVest;
+	public Segment getSegmentSouthIn() {
+		return segmentSouthIn;
 	}
 
-	public void setSegmentVest(Segment segmentVest) {
-		this.segmentVest = segmentVest;
+	public void setSegmentSouthIn(Segment segmentSouthIn) {
+		this.segmentSouthIn = segmentSouthIn;
 	}
 
-	public Segment getSegmentEast() {
-		return segmentEast;
+	public Segment getSegmentSouthOut() {
+		return segmentSouthOut;
 	}
 
-	public void setSegmentEast(Segment segmentEast) {
-		this.segmentEast = segmentEast;
+	public void setSegmentSouthOut(Segment segmentSouthOut) {
+		this.segmentSouthOut = segmentSouthOut;
+	}
+
+	public Segment getSegmentVestIn() {
+		return segmentVestIn;
+	}
+
+	public void setSegmentVestIn(Segment segmentVestIn) {
+		this.segmentVestIn = segmentVestIn;
+	}
+
+	public Segment getSegmentVestOut() {
+		return segmentVestOut;
+	}
+
+	public void setSegmentVestOut(Segment segmentVestOut) {
+		this.segmentVestOut = segmentVestOut;
+	}
+
+	public Segment getSegmentEastIn() {
+		return segmentEastIn;
+	}
+
+	public void setSegmentEastIn(Segment segmentEastIn) {
+		this.segmentEastIn = segmentEastIn;
+	}
+
+	public Segment getSegmentEastOut() {
+		return segmentEastOut;
+	}
+
+	public void setSegmentEastOut(Segment segmentEastOut) {
+		this.segmentEastOut = segmentEastOut;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 
 	public int getPhaseCounter() {

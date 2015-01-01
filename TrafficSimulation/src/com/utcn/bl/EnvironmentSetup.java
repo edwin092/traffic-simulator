@@ -55,10 +55,10 @@ public class EnvironmentSetup {
 		intersection.setPhases(2);
 		intersection.setTrafficLightEast(true);
 
-		seg1.setIntersectionEast(intersection);
-		seg2.setIntersectionVest(intersection);
-		intersection.setSegmentEast(seg1);
-		intersection.setSegmentVest(seg2);
+		seg1.setIntersectionIn(intersection);
+		seg2.setIntersectionOut(intersection);
+		intersection.setSegmentEastIn(seg1);
+		intersection.setSegmentVestOut(seg2);
 
 		segments.add(seg1);
 		segments.add(seg2);
@@ -115,7 +115,7 @@ public class EnvironmentSetup {
 					// last vehicle -> first generated
 					if (segmentVehicles.get(0).getCurrentDistance() == seg
 							.getLength()) {
-						if (seg.getIntersectionEast() == null) {
+						if (seg.getIntersectionOut() == null) {
 
 							// am ajuns la dest
 							seg.getVehicles().remove(segmentVehicles.get(0));
@@ -123,7 +123,7 @@ public class EnvironmentSetup {
 							vehDest++;
 						} else {
 							// semafor verde
-							if (seg.getIntersectionEast().isTrafficLightVest()) {
+							if (seg.getIntersectionOut().isTrafficLightVest()) {
 
 								Segment nextSegment = segmentVehicles
 										.get(0)
@@ -264,7 +264,7 @@ public class EnvironmentSetup {
 						// last vehicle -> first generated
 						if (segmentVehicles.get(0).getCurrentDistance() == seg
 								.getLength()) {
-							if (seg.getIntersectionEast() == null) {
+							if (seg.getIntersectionOut() == null) {
 
 								// am ajuns la dest
 								seg.getVehicles()
@@ -273,7 +273,7 @@ public class EnvironmentSetup {
 								vehDest++;
 							} else {
 								// semafor verde
-								if (seg.getIntersectionEast()
+								if (seg.getIntersectionOut()
 										.isTrafficLightVest()) {
 
 									Segment nextSegment = segmentVehicles
@@ -346,7 +346,7 @@ public class EnvironmentSetup {
 			globalCounter++;
 			System.out.println(globalCounter);
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(300);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
