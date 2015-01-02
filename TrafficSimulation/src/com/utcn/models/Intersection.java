@@ -27,6 +27,12 @@ public class Intersection extends JButton {
 	private Segment segmentEastIn;
 	private Segment segmentEastOut;
 
+	/* needed in view */
+	private boolean segmentNorthSelected;
+	private boolean segmentSouthSelected;
+	private boolean segmentEastSelected;
+	private boolean segmentVestSelected;
+
 	public boolean isTrafficLightNorth() {
 		return trafficLightNorth;
 	}
@@ -143,6 +149,38 @@ public class Intersection extends JButton {
 		this.phases = phases;
 	}
 
+	public boolean isSegmentNorthSelected() {
+		return segmentNorthSelected;
+	}
+
+	public void setSegmentNorthSelected(boolean segmentNorthSelected) {
+		this.segmentNorthSelected = segmentNorthSelected;
+	}
+
+	public boolean isSegmentSouthSelected() {
+		return segmentSouthSelected;
+	}
+
+	public void setSegmentSouthSelected(boolean segmentSouthSelected) {
+		this.segmentSouthSelected = segmentSouthSelected;
+	}
+
+	public boolean isSegmentEastSelected() {
+		return segmentEastSelected;
+	}
+
+	public void setSegmentEastSelected(boolean segmentEastSelected) {
+		this.segmentEastSelected = segmentEastSelected;
+	}
+
+	public boolean isSegmentVestSelected() {
+		return segmentVestSelected;
+	}
+
+	public void setSegmentVestSelected(boolean segmentVestSelected) {
+		this.segmentVestSelected = segmentVestSelected;
+	}
+
 	public int getCurrentPhase() {
 		return currentPhase;
 	}
@@ -160,5 +198,25 @@ public class Intersection extends JButton {
 		} else {
 			currentPhase++;
 		}
+	}
+
+	/**
+	 * Check if any of the 4 segments (north, vest, east, south) is selected
+	 * 
+	 * @return true if one of he segments is selected
+	 */
+	public boolean isAnySegmentSelected() {
+		return segmentVestSelected || segmentEastSelected
+				|| segmentNorthSelected || segmentSouthSelected;
+	}
+
+	/**
+	 * Set all segments selected false
+	 */
+	public void setAllSegmentsFalse() {
+		segmentEastSelected = false;
+		segmentVestSelected = false;
+		segmentNorthSelected = false;
+		segmentSouthSelected = false;
 	}
 }

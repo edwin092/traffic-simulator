@@ -3,11 +3,9 @@ package com.utcn.models;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JButton;
+public class Segment {
 
-public class Segment extends JButton {
-
-	private static final long serialVersionUID = 1L;
+	// private static final long serialVersionUID = 1L;
 
 	private List<Vehicle> vehicles;
 	private int length = 20;

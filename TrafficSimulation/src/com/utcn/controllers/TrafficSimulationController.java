@@ -5,18 +5,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.utcn.application.TrafficSimulationView;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
+import com.utcn.utils.TrafficSimulationUtil;
 
 public class TrafficSimulationController {
 
@@ -42,7 +39,6 @@ public class TrafficSimulationController {
 				checkSegmentClick();
 
 				simView.getPanelSimulation().repaint();
-				simView.setSegmentSelected(false);
 			}
 
 			/* INTERSECTION SELECTED */
@@ -72,645 +68,369 @@ public class TrafficSimulationController {
 		}
 
 		/**
+		 * 
+		 * @return
+		 */
+		private Intersection getFirstSelectedIntersection() {
+			for (Intersection intersection : simView.getIntersectionButtons()) {
+				if (intersection.isAnySegmentSelected()) {
+					return intersection;
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * 
+		 */
+		private void resetAllSegments() {
+			for (Intersection intersection : simView.getIntersectionButtons()) {
+				intersection.setAllSegmentsFalse();
+			}
+		}
+
+		/**
+		 * Get the length of the click zone based on the segment direction
+		 * 
+		 * @param add
+		 *            true - add ; false - subtract
+		 * @return length of click zone
+		 */
+		private int getClickZoneLength(boolean add) {
+			if (add) {
+				return TrafficSimulationView.INTERSECTION_SIZE / 2
+						+ TrafficSimulationView.INTERSECTION_SIZE / 4;
+			} else {
+				return TrafficSimulationView.INTERSECTION_SIZE / 2
+						- TrafficSimulationView.INTERSECTION_SIZE / 4;
+			}
+		}
+
+		/**
+		 * Set the segment out field for the current intersection based on the
+		 * selected side
+		 * 
+		 * @param intersection
+		 *            current intersection
+		 * @param segment
+		 *            the segment to be set
+		 */
+		private void setSegmentOutForIntersection(Intersection intersection,
+				Segment segment) {
+			if (intersection.isSegmentNorthSelected()) {
+
+				intersection.setSegmentNorthOut(segment);
+			} else if (intersection.isSegmentSouthSelected()) {
+
+				intersection.setSegmentSouthOut(segment);
+			} else if (intersection.isSegmentEastSelected()) {
+
+				intersection.setSegmentEastOut(segment);
+			} else if (intersection.isSegmentVestSelected()) {
+
+				intersection.setSegmentVestOut(segment);
+			}
+		}
+
+		/**
 		 * Check to see if segment can be created and if true create it
 		 */
-		public void checkSegmentClick() {
+		private void checkSegmentClick() {
+
+			Intersection firstSelectedIntersection = getFirstSelectedIntersection();
+			boolean entered = false;
+
 			for (Intersection intersection : simView.getIntersectionButtons()) {
 
-				/* Create selection panel for direction */
-				JPanel selectionPanel = new JPanel();
-				selectionPanel.add(Box.createHorizontalStrut(15));
-
-				selectionPanel.add(new JLabel("Direction:"));
-
-				ButtonGroup buttonGroup = new ButtonGroup();
-
-				JCheckBox inCheckBox = new JCheckBox("--> Intersection");
-				buttonGroup.add(inCheckBox);
-
-				selectionPanel.add(inCheckBox);
-
-				JCheckBox outCheckBox = new JCheckBox("Intersection -->");
-				buttonGroup.add(outCheckBox);
-
-				selectionPanel.add(outCheckBox);
-
 				// North
-				if ((simView.getxClick() >= intersection.getX() + 20
+				if ((simView.getxClick() >= intersection.getX()
 						&& simView.getxClick() <= (intersection.getX() + intersection
-								.getWidth()) - 20 && (simView.getyClick() <= intersection
-						.getY() && simView.getyClick() >= intersection.getY() - 20))) {
-					// JPanel selectionPanel = new JPanel();
-					//
-					//
-					// // selectionPanel.setLayout(new
-					// // BoxLayout(selectionPanel, BoxLayout.LINE_AXIS));
-					//
-					// // JTextField lengthField = new JTextField(5);
-					// //
-					// // selectionPanel.add(new JLabel("Length:"));
-					// // selectionPanel.add(lengthField);
-					// selectionPanel.add(Box.createHorizontalStrut(15));
-					//
-					// selectionPanel.add(new JLabel("Direction:"));
-					//
-					// ButtonGroup buttonGroup = new ButtonGroup();
-					//
-					// JCheckBox inCheckBox = new
-					// JCheckBox("--> Intersection");
-					// buttonGroup.add(inCheckBox);
-					// // chckbxNewCheckBox.setBounds(91, 188, 122, 23);
-					// selectionPanel.add(inCheckBox);
-					//
-					// JCheckBox outCheckBox = new JCheckBox(
-					// "Intersection -->");
-					// buttonGroup.add(outCheckBox);
-					// // chckbxNewCheckBox_1.setBounds(91, 230, 122, 23);
-					// selectionPanel.add(outCheckBox);
+								.getWidth()) && (simView.getyClick() <= intersection
+						.getY() && simView.getyClick() >= intersection.getY()
+						- TrafficSimulationView.INTERSECTION_CLICK_SIZE))) {
 
-					// check segment size
-					if (intersection.getY() < TrafficSimulationView.SEGMENT_LENGTH) {
-						JOptionPane.showMessageDialog(null,
-								"Size of segment exceeds panel!", "Warning",
-								JOptionPane.ERROR_MESSAGE);
-						return;
+					if (firstSelectedIntersection == null) {
+						// no intersection has been selected
+
+						intersection.setSegmentNorthSelected(true);
+
+						// set segment starting point
+						int firstX = intersection.getX()
+								+ getClickZoneLength(true);
+						int firstY = intersection.getY();
+
+						// save coordinates
+						simView.saveXYValues(firstX, firstY);
+					} else {
+						// starting intersection has already been selected
+
+						// create new segment
+						Segment segment = new Segment();
+
+						// set segment intersections
+						segment.setIntersectionIn(firstSelectedIntersection);
+						segment.setIntersectionOut(intersection);
+
+						// set segment end point
+						int finalX = intersection.getX()
+								+ getClickZoneLength(false);
+						int finalY = intersection.getY();
+						// save coordinates
+						simView.saveXYValues(finalX, finalY);
+
+						// get current segment coordinates
+						List<Integer> xCoords = simView
+								.getCurrentSegmentXCoords();
+						List<Integer> yCoords = simView
+								.getCurrentSegmentYCoords();
+
+						// set coordinates for segment
+						segment.setLineCoordsX(TrafficSimulationUtil
+								.convertList(xCoords));
+						segment.setLineCoordsY(TrafficSimulationUtil
+								.convertList(yCoords));
+
+						// set segment for intersections
+						intersection.setSegmentNorthIn(segment);
+						setSegmentOutForIntersection(firstSelectedIntersection,
+								segment);
+
+						simView.incrementCurrentSegement();
+						resetAllSegments();
+						simView.setSegmentSelected(false);
 					}
 
-					int result = JOptionPane.showConfirmDialog(null,
-							selectionPanel,
-							"Please Enter Direction and Length Values",
-							JOptionPane.OK_CANCEL_OPTION);
-
-					if (result == JOptionPane.OK_OPTION) {
-						// int length = Integer.parseInt(lengthField
-						// .getText());
-
-						if (outCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(
-									intersection.getX() + 60,
-									intersection.getY()
-											- TrafficSimulationView.SEGMENT_LENGTH,
-									TrafficSimulationView.SEGMENT_WIDTH,
-									TrafficSimulationView.SEGMENT_LENGTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentNorthOut(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										&& intersectionOther.getY() == intersection
-												.getY()
-												- TrafficSimulationView.SEGMENT_LENGTH
-												- TrafficSimulationView.INTERSECTION_SIZE) {
-									intersectionOther
-											.setSegmentSouthIn(segment);
-								}
-							}
-
-							break;
-						} else if (inCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(
-									intersection.getX() + 20,
-									intersection.getY()
-											- TrafficSimulationView.SEGMENT_LENGTH,
-									TrafficSimulationView.SEGMENT_WIDTH,
-									TrafficSimulationView.SEGMENT_LENGTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentNorthIn(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										&& intersectionOther.getY() == intersection
-												.getY()
-												- TrafficSimulationView.SEGMENT_LENGTH
-												- TrafficSimulationView.INTERSECTION_SIZE) {
-									intersectionOther
-											.setSegmentSouthOut(segment);
-								}
-							}
-
-							break;
-						}
-					}
+					entered = true;
+					break;
 				}
 
 				// South
-				if ((simView.getxClick() >= intersection.getX() + 20
+				if ((simView.getxClick() >= intersection.getX()
 						&& simView.getxClick() <= (intersection.getX() + intersection
-								.getWidth()) - 20 && (simView.getyClick() >= (intersection
+								.getWidth()) && (simView.getyClick() >= (intersection
 						.getHeight() + intersection.getY()) && simView
 						.getyClick() <= (intersection.getHeight() + intersection
-						.getY()) + 20))) {
+						.getY())
+						+ TrafficSimulationView.INTERSECTION_CLICK_SIZE))) {
 
-					// check segment size
-					if (intersection.getY() + intersection.getHeight()
-							+ TrafficSimulationView.SEGMENT_LENGTH > simView
-							.getFrame().getHeight()) {
-						JOptionPane.showMessageDialog(null,
-								"Size of segment exceeds panel!", "Warning",
-								JOptionPane.ERROR_MESSAGE);
-						return;
+					if (firstSelectedIntersection == null) {
+						// no intersection has been selected
+
+						intersection.setSegmentSouthSelected(true);
+
+						// set segment starting point
+						int firstX = intersection.getX()
+								+ getClickZoneLength(false);
+						int firstY = intersection.getY()
+								+ TrafficSimulationView.INTERSECTION_SIZE;
+
+						// save coordinates
+						simView.saveXYValues(firstX, firstY);
+					} else {
+						// starting intersection has already been selected
+
+						// create new segment
+						Segment segment = new Segment();
+
+						// set segment intersections
+						segment.setIntersectionIn(firstSelectedIntersection);
+						segment.setIntersectionOut(intersection);
+
+						// set segment end point
+						int finalX = intersection.getX()
+								+ getClickZoneLength(true);
+						int finalY = intersection.getY()
+								+ TrafficSimulationView.INTERSECTION_SIZE;
+						// save coordinates
+						simView.saveXYValues(finalX, finalY);
+
+						// get current segment coordinates
+						List<Integer> xCoords = simView
+								.getCurrentSegmentXCoords();
+						List<Integer> yCoords = simView
+								.getCurrentSegmentYCoords();
+
+						// set coordinates for segment
+						segment.setLineCoordsX(TrafficSimulationUtil
+								.convertList(xCoords));
+						segment.setLineCoordsY(TrafficSimulationUtil
+								.convertList(yCoords));
+
+						// set segment for intersections
+						intersection.setSegmentSouthIn(segment);
+						setSegmentOutForIntersection(firstSelectedIntersection,
+								segment);
+
+						simView.incrementCurrentSegement();
+						resetAllSegments();
+						simView.setSegmentSelected(false);
 					}
 
-					int result = JOptionPane.showConfirmDialog(null,
-							selectionPanel,
-							"Please Enter Direction and Length Values",
-							JOptionPane.OK_CANCEL_OPTION);
-
-					if (result == JOptionPane.OK_OPTION) {
-
-						if (outCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(
-									intersection.getX() + 20,
-									intersection.getY()
-											+ intersection.getHeight(),
-									TrafficSimulationView.SEGMENT_WIDTH,
-									TrafficSimulationView.SEGMENT_LENGTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentSouthOut(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										&& intersectionOther.getY() == intersection
-												.getY()
-												+ TrafficSimulationView.SEGMENT_LENGTH
-												+ TrafficSimulationView.INTERSECTION_SIZE) {
-									intersectionOther
-											.setSegmentNorthIn(segment);
-								}
-							}
-
-							break;
-						} else if (inCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(
-									intersection.getX() + 60,
-									intersection.getY()
-											+ intersection.getHeight(),
-									TrafficSimulationView.SEGMENT_WIDTH,
-									TrafficSimulationView.SEGMENT_LENGTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentSouthIn(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										&& intersectionOther.getY() == intersection
-												.getY()
-												+ TrafficSimulationView.SEGMENT_LENGTH
-												+ TrafficSimulationView.INTERSECTION_SIZE) {
-									intersectionOther
-											.setSegmentNorthOut(segment);
-								}
-							}
-
-							break;
-						}
-					}
+					entered = true;
+					break;
 				}
 
 				// Vest
 				if ((simView.getxClick() <= intersection.getX()
-						&& simView.getxClick() >= intersection.getX() - 20 && (simView
-						.getyClick() >= intersection.getY() + 20 && simView
+						&& simView.getxClick() >= intersection.getX()
+								- TrafficSimulationView.INTERSECTION_CLICK_SIZE && (simView
+						.getyClick() >= intersection.getY() && simView
 						.getyClick() <= (intersection.getHeight() + intersection
-						.getY()) - 20))) {
+						.getY())))) {
 
-					// check segment size
-					if (intersection.getX() < TrafficSimulationView.SEGMENT_LENGTH) {
-						JOptionPane.showMessageDialog(null,
-								"Size of segment exceeds panel!", "Warning",
-								JOptionPane.ERROR_MESSAGE);
-						return;
+					if (firstSelectedIntersection == null) {
+						// no intersection has been selected
+
+						intersection.setSegmentVestSelected(true);
+
+						// set segment starting point
+						int firstX = intersection.getX();
+						int firstY = intersection.getY()
+								+ getClickZoneLength(false);
+
+						// save coordinates
+						simView.saveXYValues(firstX, firstY);
+					} else {
+						// starting intersection has already been selected
+
+						// create new segment
+						Segment segment = new Segment();
+
+						// set segment intersections
+						segment.setIntersectionIn(firstSelectedIntersection);
+						segment.setIntersectionOut(intersection);
+
+						// set segment end point
+						int finalX = intersection.getX();
+						int finalY = intersection.getY()
+								+ getClickZoneLength(true);
+						// save coordinates
+						simView.saveXYValues(finalX, finalY);
+
+						// get current segment coordinates
+						List<Integer> xCoords = simView
+								.getCurrentSegmentXCoords();
+						List<Integer> yCoords = simView
+								.getCurrentSegmentYCoords();
+
+						// set coordinates for segment
+						segment.setLineCoordsX(TrafficSimulationUtil
+								.convertList(xCoords));
+						segment.setLineCoordsY(TrafficSimulationUtil
+								.convertList(yCoords));
+
+						// set segment for intersections
+						intersection.setSegmentVestIn(segment);
+						setSegmentOutForIntersection(firstSelectedIntersection,
+								segment);
+
+						simView.incrementCurrentSegement();
+						resetAllSegments();
+						simView.setSegmentSelected(false);
 					}
 
-					int result = JOptionPane.showConfirmDialog(null,
-							selectionPanel,
-							"Please Enter Direction and Length Values",
-							JOptionPane.OK_CANCEL_OPTION);
-
-					if (result == JOptionPane.OK_OPTION) {
-
-						if (outCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(intersection.getX()
-									- TrafficSimulationView.SEGMENT_LENGTH,
-									intersection.getY() + 20,
-									TrafficSimulationView.SEGMENT_LENGTH,
-									TrafficSimulationView.SEGMENT_WIDTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentVestOut(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										- TrafficSimulationView.SEGMENT_LENGTH
-										- TrafficSimulationView.INTERSECTION_SIZE
-										&& intersectionOther.getY() == intersection
-												.getY()) {
-									intersectionOther.setSegmentEastIn(segment);
-								}
-							}
-
-							break;
-						} else if (inCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(intersection.getX()
-									- TrafficSimulationView.SEGMENT_LENGTH,
-									intersection.getY() + 60,
-									TrafficSimulationView.SEGMENT_LENGTH,
-									TrafficSimulationView.SEGMENT_WIDTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentVestIn(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										- TrafficSimulationView.SEGMENT_LENGTH
-										- TrafficSimulationView.INTERSECTION_SIZE
-										&& intersectionOther.getY() == intersection
-												.getY()) {
-									intersectionOther
-											.setSegmentEastOut(segment);
-								}
-							}
-
-							break;
-						}
-					}
+					entered = true;
+					break;
 				}
 
 				// East
 				if ((simView.getxClick() >= (intersection.getX() + intersection
 						.getWidth())
 						&& simView.getxClick() <= (intersection.getX() + intersection
-								.getWidth()) + 20 && (simView.getyClick() >= intersection
-						.getY() + 20 && simView.getyClick() <= (intersection
-						.getHeight() + intersection.getY()) - 20))) {
+								.getWidth())
+								+ TrafficSimulationView.INTERSECTION_CLICK_SIZE && (simView
+						.getyClick() >= intersection.getY() && simView
+						.getyClick() <= (intersection.getHeight() + intersection
+						.getY())))) {
 
-					// check segment size
-					if (intersection.getX() + intersection.getWidth()
-							+ TrafficSimulationView.SEGMENT_LENGTH > simView
-							.getFrame().getWidth()) {
-						JOptionPane.showMessageDialog(null,
-								"Size of segment exceeds panel!", "Warning",
-								JOptionPane.ERROR_MESSAGE);
-						return;
+					if (firstSelectedIntersection == null) {
+						// no intersection has been selected
+
+						intersection.setSegmentEastSelected(true);
+
+						// set segment starting point
+						int firstX = intersection.getX()
+								+ TrafficSimulationView.INTERSECTION_SIZE;
+						int firstY = intersection.getY()
+								+ getClickZoneLength(true);
+
+						// save coordinates
+						simView.saveXYValues(firstX, firstY);
+					} else {
+						// starting intersection has already been selected
+
+						// create new segment
+						Segment segment = new Segment();
+
+						// set segment intersections
+						segment.setIntersectionIn(firstSelectedIntersection);
+						segment.setIntersectionOut(intersection);
+
+						// set segment end point
+						int finalX = intersection.getX()
+								+ TrafficSimulationView.INTERSECTION_SIZE;
+						int finalY = intersection.getY()
+								+ getClickZoneLength(false);
+						// save coordinates
+						simView.saveXYValues(finalX, finalY);
+
+						// get current segment coordinates
+						List<Integer> xCoords = simView
+								.getCurrentSegmentXCoords();
+						List<Integer> yCoords = simView
+								.getCurrentSegmentYCoords();
+
+						// set coordinates for segment
+						segment.setLineCoordsX(TrafficSimulationUtil
+								.convertList(xCoords));
+						segment.setLineCoordsY(TrafficSimulationUtil
+								.convertList(yCoords));
+
+						// set segment for intersections
+						intersection.setSegmentEastIn(segment);
+						setSegmentOutForIntersection(firstSelectedIntersection,
+								segment);
+
+						simView.incrementCurrentSegement();
+						resetAllSegments();
+						simView.setSegmentSelected(false);
 					}
 
-					int result = JOptionPane.showConfirmDialog(null,
-							selectionPanel,
-							"Please Enter Direction and Length Values",
-							JOptionPane.OK_CANCEL_OPTION);
-
-					if (result == JOptionPane.OK_OPTION) {
-
-						if (outCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(intersection.getX()
-									+ intersection.getWidth(),
-									intersection.getY() + 60,
-									TrafficSimulationView.SEGMENT_LENGTH,
-									TrafficSimulationView.SEGMENT_WIDTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentEastOut(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										+ TrafficSimulationView.SEGMENT_LENGTH
-										+ TrafficSimulationView.INTERSECTION_SIZE
-										&& intersectionOther.getY() == intersection
-												.getY()) {
-									intersectionOther.setSegmentVestIn(segment);
-								}
-							}
-
-							break;
-						} else if (inCheckBox.isSelected()) {
-							Segment segment = new Segment();
-							// Length is hard-coded to 100m
-							segment.setBounds(intersection.getX()
-									+ intersection.getWidth(),
-									intersection.getY() + 20,
-									TrafficSimulationView.SEGMENT_LENGTH,
-									TrafficSimulationView.SEGMENT_WIDTH);
-							segment.setLayout(null);
-
-							simView.getPanelSimulation().add(segment);
-
-							simView.getSegmentButtons().add(segment);
-
-							simView.getPanelSimulation().repaint();
-
-							intersection.setSegmentEastIn(segment);
-
-							// check to see if there is a intersection
-							for (Intersection intersectionOther : simView
-									.getIntersectionButtons()) {
-								if (intersectionOther.getX() == intersection
-										.getX()
-										+ TrafficSimulationView.SEGMENT_LENGTH
-										+ TrafficSimulationView.INTERSECTION_SIZE
-										&& intersectionOther.getY() == intersection
-												.getY()) {
-									intersectionOther.setSegmentVestIn(segment);
-								}
-							}
-
-							break;
-						}
-					}
+					entered = true;
+					break;
 				}
+			}
+
+			if (!entered && firstSelectedIntersection != null) {
+				// save click coordinates
+				simView.saveXYValues(null, null);
 			}
 		}
 
 		/**
 		 * Check to see if intersection can be created and if true create it
-		 * TODO CHECK POSSIBLE CONNECTED SEGMENTS
 		 */
-		public void checkIntersectionClick() {
-			if (simView.getIntersectionButtons().isEmpty()) {
-				// no intersection available
-				// create a new one
+		private void checkIntersectionClick() {
 
-				// check intersection size
-				if (simView.getxClick()
-						+ TrafficSimulationView.INTERSECTION_SIZE > simView
-						.getFrame().getWidth()
-						|| simView.getyClick()
-								+ TrafficSimulationView.INTERSECTION_SIZE > simView
-								.getFrame().getHeight()) {
-					JOptionPane.showMessageDialog(null,
-							"Size of Intersection exceeds panel!", "Warning",
-							JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-
-				Intersection intersection = new Intersection();
-				intersection.setEnabled(false);
-				intersection.setBounds(simView.getxClick(),
-						simView.getyClick(),
-						TrafficSimulationView.INTERSECTION_SIZE,
-						TrafficSimulationView.INTERSECTION_SIZE);
-				simView.getIntersectionButtons().add(intersection);
-				simView.getPanelSimulation().add(intersection);
-			} else {
-				// create intersection only after segment
-				for (Intersection intersection : simView
-						.getIntersectionButtons()) {
-
-					// NORTH
-					if (intersection.getSegmentNorthIn() != null
-							|| intersection.getSegmentNorthOut() != null) {
-
-						if ((simView.getxClick() >= (intersection.getX() + 20))
-								&& (simView.getxClick() <= (intersection.getX()
-										+ intersection.getWidth() - 20))
-								&& (simView.getyClick() <= (intersection.getY() - TrafficSimulationView.SEGMENT_LENGTH))
-								&& (simView.getyClick() >= (intersection.getY()
-										- TrafficSimulationView.SEGMENT_LENGTH - 20))) {
-
-							// check intersection size
-							if (intersection.getY()
-									- TrafficSimulationView.SEGMENT_LENGTH
-									- TrafficSimulationView.INTERSECTION_SIZE < 0) {
-								JOptionPane.showMessageDialog(null,
-										"Size of Intersection exceeds panel!",
-										"Warning", JOptionPane.ERROR_MESSAGE);
-								return;
-							}
-
-							Intersection newIntersection = new Intersection();
-							newIntersection
-									.setBounds(
-											intersection.getX(),
-											intersection.getY()
-													- TrafficSimulationView.SEGMENT_LENGTH
-													- TrafficSimulationView.INTERSECTION_SIZE,
-											TrafficSimulationView.INTERSECTION_SIZE,
-											TrafficSimulationView.INTERSECTION_SIZE);
-
-							// connect segments to new intersection
-							newIntersection.setSegmentSouthIn(intersection
-									.getSegmentNorthOut());
-							newIntersection.setSegmentSouthOut(intersection
-									.getSegmentNorthIn());
-
-							simView.getIntersectionButtons().add(
-									newIntersection);
-							simView.getPanelSimulation().add(newIntersection);
-							break;
-						}
-					}
-
-					// SOUTH
-					if (intersection.getSegmentSouthIn() != null
-							|| intersection.getSegmentSouthOut() != null) {
-						if ((simView.getxClick() >= (intersection.getX() + 20))
-								&& (simView.getxClick() <= (intersection.getX()
-										+ intersection.getWidth() - 20))
-								&& (simView.getyClick() >= (intersection.getY()
-										+ intersection.getHeight() + TrafficSimulationView.SEGMENT_LENGTH))
-								&& (simView.getyClick() <= (intersection.getY()
-										+ intersection.getHeight()
-										+ TrafficSimulationView.SEGMENT_LENGTH + 20))) {
-
-							// check intersection size
-							if (intersection.getY()
-									+ TrafficSimulationView.SEGMENT_LENGTH + 2
-									* TrafficSimulationView.INTERSECTION_SIZE > simView
-									.getFrame().getHeight()) {
-								JOptionPane.showMessageDialog(null,
-										"Size of Intersection exceeds panel!",
-										"Warning", JOptionPane.ERROR_MESSAGE);
-								return;
-							}
-
-							Intersection newIntersection = new Intersection();
-							newIntersection
-									.setBounds(
-											intersection.getX(),
-											intersection.getY()
-													+ intersection.getHeight()
-													+ TrafficSimulationView.SEGMENT_LENGTH,
-											TrafficSimulationView.INTERSECTION_SIZE,
-											TrafficSimulationView.INTERSECTION_SIZE);
-
-							// connect segments to new intersection
-							newIntersection.setSegmentNorthIn(intersection
-									.getSegmentSouthOut());
-							newIntersection.setSegmentNorthOut(intersection
-									.getSegmentSouthIn());
-
-							simView.getIntersectionButtons().add(
-									newIntersection);
-							simView.getPanelSimulation().add(newIntersection);
-							break;
-						}
-					}
-
-					// EAST
-					if (intersection.getSegmentEastIn() != null
-							|| intersection.getSegmentEastOut() != null) {
-						if ((simView.getxClick() >= (intersection.getX()
-								+ intersection.getWidth() + TrafficSimulationView.SEGMENT_LENGTH))
-								&& (simView.getxClick() <= (intersection.getX()
-										+ intersection.getWidth()
-										+ TrafficSimulationView.SEGMENT_LENGTH + 20))
-								&& (simView.getyClick() >= (intersection.getY() + 20))
-								&& (simView.getyClick() <= (intersection.getY()
-										+ intersection.getHeight() - 20))) {
-
-							// check intersection size
-							if (intersection.getX()
-									+ TrafficSimulationView.SEGMENT_LENGTH + 2
-									* TrafficSimulationView.INTERSECTION_SIZE > simView
-									.getFrame().getWidth()) {
-								JOptionPane.showMessageDialog(null,
-										"Size of Intersection exceeds panel!",
-										"Warning", JOptionPane.ERROR_MESSAGE);
-								return;
-							}
-
-							Intersection newIntersection = new Intersection();
-							newIntersection.setBounds(intersection.getX()
-									+ intersection.getWidth()
-									+ TrafficSimulationView.SEGMENT_LENGTH,
-									intersection.getY(),
-									TrafficSimulationView.INTERSECTION_SIZE,
-									TrafficSimulationView.INTERSECTION_SIZE);
-
-							// connect segments to new intersection
-							newIntersection.setSegmentVestIn(intersection
-									.getSegmentEastOut());
-							newIntersection.setSegmentVestOut(intersection
-									.getSegmentEastIn());
-
-							simView.getIntersectionButtons().add(
-									newIntersection);
-							simView.getPanelSimulation().add(newIntersection);
-							break;
-						}
-					}
-
-					// VEST
-					if (intersection.getSegmentVestIn() != null
-							|| intersection.getSegmentVestOut() != null) {
-						if ((simView.getxClick() >= (intersection.getX()
-								- TrafficSimulationView.SEGMENT_LENGTH - 20))
-								&& (simView.getxClick() <= (intersection.getX() - TrafficSimulationView.SEGMENT_LENGTH))
-								&& (simView.getyClick() >= (intersection.getY() + 20))
-								&& (simView.getyClick() <= (intersection.getY()
-										+ intersection.getHeight() - 20))) {
-
-							// check intersection size
-							if (intersection.getX()
-									- TrafficSimulationView.SEGMENT_LENGTH
-									- TrafficSimulationView.INTERSECTION_SIZE < 0) {
-								JOptionPane.showMessageDialog(null,
-										"Size of Intersection exceeds panel!",
-										"Warning", JOptionPane.ERROR_MESSAGE);
-								return;
-							}
-
-							Intersection newIntersection = new Intersection();
-							newIntersection.setBounds(intersection.getX()
-									- intersection.getWidth()
-									- TrafficSimulationView.SEGMENT_LENGTH,
-									intersection.getY(),
-									TrafficSimulationView.INTERSECTION_SIZE,
-									TrafficSimulationView.INTERSECTION_SIZE);
-
-							// connect segments to new intersection
-							newIntersection.setSegmentEastIn(intersection
-									.getSegmentVestOut());
-							newIntersection.setSegmentEastOut(intersection
-									.getSegmentVestIn());
-
-							simView.getIntersectionButtons().add(
-									newIntersection);
-							simView.getPanelSimulation().add(newIntersection);
-							break;
-						}
-					}
-				}
+			// check intersection size
+			if (simView.getxClick() + TrafficSimulationView.INTERSECTION_SIZE > simView
+					.getFrame().getWidth()
+					|| simView.getyClick()
+							+ TrafficSimulationView.INTERSECTION_SIZE > simView
+							.getFrame().getHeight()) {
+				JOptionPane.showMessageDialog(null,
+						"Size of Intersection exceeds panel!", "Warning",
+						JOptionPane.ERROR_MESSAGE);
+				return;
 			}
+
+			Intersection intersection = new Intersection();
+			intersection.setEnabled(false);
+			intersection.setBounds(simView.getxClick(), simView.getyClick(),
+					TrafficSimulationView.INTERSECTION_SIZE,
+					TrafficSimulationView.INTERSECTION_SIZE);
+			simView.getIntersectionButtons().add(intersection);
+			simView.getPanelSimulation().add(intersection);
 		}
 
 	}

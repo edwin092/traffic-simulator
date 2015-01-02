@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.Box;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -25,12 +27,14 @@ import com.utcn.bl.EnvironmentSetup;
 import com.utcn.controllers.TrafficSimulationController;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
+import com.utcn.utils.TrafficSimulationUtil;
 
 public class TrafficSimulationView {
 
-	public static final int SEGMENT_LENGTH = 100;
-	public static final int SEGMENT_WIDTH = 40;
-	public static final int INTERSECTION_SIZE = 120;
+	// public static final int SEGMENT_LENGTH = 100;
+	// public static final int SEGMENT_WIDTH = 40;
+	public static final int INTERSECTION_SIZE = 60;
+	public static final int INTERSECTION_CLICK_SIZE = 20;
 	public static final int TRAFFIC_LIGHT_SIZE = 15;
 
 	private JFrame frame;
@@ -43,10 +47,10 @@ public class TrafficSimulationView {
 	private JPanel panelSimulation;
 	private JMenuItem startMenuItem;
 
+	private int currentSegement = 1;
+
 	private List<Intersection> intersectionButtons = new ArrayList<>();
 	private List<Segment> segmentButtons = new ArrayList<>();
-
-	// private List<Integer> sizes = new ArrayList<Integer>();
 
 	private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
 	private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
@@ -121,10 +125,6 @@ public class TrafficSimulationView {
 		mntmSegment.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				isSegmentSelected = true;
-				// sizes.add(100);
-				// sizes.add(200);
-				// sizes.add(300);
-				// sizes.add(400);
 
 				panelSimulation.repaint();
 			}
@@ -139,6 +139,18 @@ public class TrafficSimulationView {
 			}
 		});
 		mnComponents.add(mntmIntersection);
+
+		JMenu mnImport = new JMenu("Import");
+		menuBar.add(mnImport);
+
+		JMenuItem mntmFromXml = new JMenuItem("From XML");
+		mntmFromXml.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// TODO
+				// ADD XML import here
+			}
+		});
+		mnImport.add(mntmFromXml);
 
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setBounds(10, 11, 1301, 721);
@@ -180,156 +192,17 @@ public class TrafficSimulationView {
 				.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		splitPane.setLeftComponent(scrollPaneSimulation);
 
-		// TODO
-		/* MOVED TO CONTROLLER */
-
-		// panelSimulation.addMouseListener(new MouseAdapter() {
-		// @Override
-		// public void mouseClicked(MouseEvent e) {
-		// xClick = e.getX();
-		// yClick = e.getY();
-		//
-		// if (isSegmentSelected) {
-		// for (JButton intersection : intersectionButtons) {
-		//
-		// // North
-		// if ((xClick >= intersection.getX() + 20
-		// && xClick <= (intersection.getX() + intersection
-		// .getWidth()) - 20 && (yClick <= intersection
-		// .getY() && yClick >= intersection.getY() - 20))) {
-		// JPanel selectionPanel = new JPanel();
-		// // selectionPanel.setLayout(new
-		// // BoxLayout(selectionPanel, BoxLayout.LINE_AXIS));
-		//
-		// // JTextField lengthField = new JTextField(5);
-		// //
-		// // selectionPanel.add(new JLabel("Length:"));
-		// // selectionPanel.add(lengthField);
-		// selectionPanel.add(Box.createHorizontalStrut(15));
-		//
-		// selectionPanel.add(new JLabel("Direction:"));
-		//
-		// ButtonGroup buttonGroup = new ButtonGroup();
-		//
-		// JCheckBox inCheckBox = new JCheckBox(
-		// "--> Intersection");
-		// buttonGroup.add(inCheckBox);
-		// // chckbxNewCheckBox.setBounds(91, 188, 122, 23);
-		// selectionPanel.add(inCheckBox);
-		//
-		// JCheckBox outCheckBox = new JCheckBox(
-		// "Intersection -->");
-		// buttonGroup.add(outCheckBox);
-		// // chckbxNewCheckBox_1.setBounds(91, 230, 122, 23);
-		// selectionPanel.add(outCheckBox);
-		//
-		// int result = JOptionPane.showConfirmDialog(null,
-		// selectionPanel,
-		// "Please Enter Direction and Length Values",
-		// JOptionPane.OK_CANCEL_OPTION);
-		//
-		// if (result == JOptionPane.OK_OPTION) {
-		// // int length = Integer.parseInt(lengthField
-		// // .getText());
-		//
-		// if (outCheckBox.isSelected()) {
-		// Segment segment = new Segment();
-		// // TODO
-		// // Length is hard-coded to 100m
-		// segment.setBounds(intersection.getX() + 60,
-		// intersection.getY() - 100, 40, 100);
-		// segment.setLayout(null);
-		//
-		// panelSimulation.add(segment);
-		//
-		// segmentButtons.add(segment);
-		//
-		// panelSimulation.repaint();
-		// } else if (inCheckBox.isSelected()) {
-		//
-		// } else {
-		//
-		// }
-		// }
-		// }
-		//
-		// // South
-		// if ((xClick >= intersection.getX() + 20
-		// && xClick <= (intersection.getX() + intersection
-		// .getWidth()) - 20 && (yClick >= (intersection
-		// .getHeight() + intersection.getY()) && yClick <= (intersection
-		// .getHeight() + intersection.getY()) + 20))) {
-		// System.out.println("South");
-		// }
-		//
-		// // Vest
-		// if ((xClick <= intersection.getX()
-		// && xClick >= intersection.getX() - 20 && (yClick >= intersection
-		// .getY() + 20 && yClick <= (intersection
-		// .getHeight() + intersection.getY()) - 20))) {
-		// System.out.println("Vest");
-		// }
-		//
-		// // East
-		// if ((xClick >= (intersection.getX() + intersection
-		// .getWidth())
-		// && xClick <= (intersection.getX() + intersection
-		// .getWidth()) + 20 && (yClick >= intersection
-		// .getY() + 20 && yClick <= (intersection
-		// .getHeight() + intersection.getY()) - 20))) {
-		// System.out.println("East");
-		// }
-		//
-		// break;
-		// }
-		//
-		// panelSimulation.repaint();
-		// }
-		//
-		// if (isIntersectionSelected) {
-		//
-		// for (JButton segment : segmentButtons) {
-		// // TODO
-		// }
-		//
-		// Intersection intersection = new Intersection();
-		// intersection.setBounds(xClick, yClick, 120, 120);
-		// intersectionButtons.add(intersection);
-		// panelSimulation.add(intersection);
-		//
-		// panelSimulation.repaint();
-		// isIntersectionSelected = false;
-		// }
-		//
-		// }
-		// });
-		//
-		// sizes.add(0);
-		// sizes.add(100);
-		// sizes.add(300);
-		// sizes.add(150);
-
 		panelSimulation = new JPanel() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
 
-				// for (int i = 0; i < sizes.size() / 4; i++) {
-				// g.drawLine(sizes.get(i), sizes.get(i + 1),
-				// sizes.get(i + 2), sizes.get(i + 3));
-				// }
-
 				for (Integer key : segmentCoordsX.keySet()) {
 					List<Integer> xCoords = segmentCoordsX.get(key);
 					List<Integer> yCoords = segmentCoordsY.get(key);
 
-					// convert List to int[]
-					int[] x = new int[xCoords.size()];
-					int[] y = new int[yCoords.size()];
-					for (int i = 0; i < xCoords.size(); i++) {
-						x[i] = xCoords.get(i);
-						y[i] = yCoords.get(i);
-					}
+					int[] x = TrafficSimulationUtil.convertList(xCoords);
+					int[] y = TrafficSimulationUtil.convertList(yCoords);
 
 					// draw polyline
 					g.drawPolyline(x, y, x.length);
@@ -347,6 +220,44 @@ public class TrafficSimulationView {
 		// segment1.add(lblO);
 		// lblO.setBounds(1, 13, 10, 10);
 
+	}
+
+	/**
+	 * 
+	 */
+	public void saveXYValues(Integer x, Integer y) {
+		List<Integer> xList = segmentCoordsX.get(currentSegement);
+		List<Integer> yList = segmentCoordsY.get(currentSegement);
+
+		if (xList == null) {
+			// segmentCoordsX.put(currentSegement, new ArrayList<Integer>());
+			// segmentCoordsY.put(currentSegement, new ArrayList<Integer>());
+
+			List<Integer> newXList = new ArrayList<Integer>();
+			List<Integer> newYList = new ArrayList<Integer>();
+
+			if (x == null && y == null) {
+				newXList.add(xClick);
+				newYList.add(yClick);
+			} else {
+				newXList.add(x);
+				newYList.add(y);
+			}
+
+			segmentCoordsX.put(currentSegement, newXList);
+			segmentCoordsY.put(currentSegement, newYList);
+		} else {
+			if (x == null && y == null) {
+				xList.add(xClick);
+				yList.add(yClick);
+			} else {
+				xList.add(x);
+				yList.add(y);
+			}
+
+			segmentCoordsX.put(currentSegement, xList);
+			segmentCoordsY.put(currentSegement, yList);
+		}
 	}
 
 	public void simulate() {
@@ -488,5 +399,25 @@ public class TrafficSimulationView {
 
 	public void setSegmentCoordsY(Map<Integer, List<Integer>> segmentCoordsY) {
 		this.segmentCoordsY = segmentCoordsY;
+	}
+
+	public int getCurrentSegement() {
+		return currentSegement;
+	}
+
+	public void setCurrentSegement(int currentSegement) {
+		this.currentSegement = currentSegement;
+	}
+
+	public void incrementCurrentSegement() {
+		this.currentSegement++;
+	}
+
+	public List<Integer> getCurrentSegmentXCoords() {
+		return segmentCoordsX.get(currentSegement);
+	}
+
+	public List<Integer> getCurrentSegmentYCoords() {
+		return segmentCoordsY.get(currentSegement);
 	}
 }
