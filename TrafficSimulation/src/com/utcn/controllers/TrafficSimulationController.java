@@ -149,7 +149,8 @@ public class TrafficSimulationController {
 						.getY() && simView.getyClick() >= intersection.getY()
 						- TrafficSimulationView.INTERSECTION_CLICK_SIZE))) {
 
-					if (firstSelectedIntersection == null) {
+					if (firstSelectedIntersection == null
+							&& intersection.getSegmentNorthOut() == null) {
 						// no intersection has been selected
 
 						intersection.setSegmentNorthSelected(true);
@@ -161,7 +162,8 @@ public class TrafficSimulationController {
 
 						// save coordinates
 						simView.saveXYValues(firstX, firstY);
-					} else {
+					} else if (firstSelectedIntersection != null
+							&& intersection.getSegmentNorthOut() == null) {
 						// starting intersection has already been selected
 
 						// create new segment
@@ -213,7 +215,8 @@ public class TrafficSimulationController {
 						.getY())
 						+ TrafficSimulationView.INTERSECTION_CLICK_SIZE))) {
 
-					if (firstSelectedIntersection == null) {
+					if (firstSelectedIntersection == null
+							&& intersection.getSegmentSouthOut() == null) {
 						// no intersection has been selected
 
 						intersection.setSegmentSouthSelected(true);
@@ -226,7 +229,8 @@ public class TrafficSimulationController {
 
 						// save coordinates
 						simView.saveXYValues(firstX, firstY);
-					} else {
+					} else if (firstSelectedIntersection != null
+							&& intersection.getSegmentSouthIn() == null) {
 						// starting intersection has already been selected
 
 						// create new segment
@@ -278,7 +282,8 @@ public class TrafficSimulationController {
 						.getyClick() <= (intersection.getHeight() + intersection
 						.getY())))) {
 
-					if (firstSelectedIntersection == null) {
+					if (firstSelectedIntersection == null
+							&& intersection.getSegmentVestOut() == null) {
 						// no intersection has been selected
 
 						intersection.setSegmentVestSelected(true);
@@ -290,7 +295,8 @@ public class TrafficSimulationController {
 
 						// save coordinates
 						simView.saveXYValues(firstX, firstY);
-					} else {
+					} else if (firstSelectedIntersection != null
+							&& intersection.getSegmentVestIn() == null) {
 						// starting intersection has already been selected
 
 						// create new segment
@@ -343,7 +349,8 @@ public class TrafficSimulationController {
 						.getyClick() <= (intersection.getHeight() + intersection
 						.getY())))) {
 
-					if (firstSelectedIntersection == null) {
+					if (firstSelectedIntersection == null
+							&& intersection.getSegmentEastOut() == null) {
 						// no intersection has been selected
 
 						intersection.setSegmentEastSelected(true);
@@ -356,7 +363,8 @@ public class TrafficSimulationController {
 
 						// save coordinates
 						simView.saveXYValues(firstX, firstY);
-					} else {
+					} else if (firstSelectedIntersection != null
+							&& intersection.getSegmentEastIn() == null) {
 						// starting intersection has already been selected
 
 						// create new segment
