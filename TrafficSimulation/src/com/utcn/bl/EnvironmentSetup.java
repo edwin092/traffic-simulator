@@ -3,6 +3,7 @@ package com.utcn.bl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
@@ -26,6 +27,9 @@ public class EnvironmentSetup {
 	private List<Intersection> intersections;
 	private int globalCounter;
 
+	/**
+	 * 
+	 */
 	public EnvironmentSetup() {
 		logger = Logger.getLogger("MyLog");
 		FileHandler fh;
@@ -44,8 +48,8 @@ public class EnvironmentSetup {
 		}
 
 		vehicleGenerator = new VehicleGenerator();
-		segments = new ArrayList<Segment>();
-		intersections = new ArrayList<Intersection>();
+		this.segments = new ArrayList<Segment>();
+		this.intersections = new ArrayList<Intersection>();
 
 		Segment seg1 = new Segment();
 		Segment seg2 = new Segment();
@@ -66,6 +70,45 @@ public class EnvironmentSetup {
 		intersections.add(intersection);
 	}
 
+	public EnvironmentSetup(List<Segment> segments,
+			List<Intersection> intersections, boolean isFileLoggingEnabled) {
+
+		logger = Logger.getLogger("MyLog");
+
+		if (isFileLoggingEnabled) {
+			// File logging
+			try {
+				// This block configure the logger with handler and formatter
+				FileHandler fh = new FileHandler("MyLogFile.log");
+				logger.addHandler(fh);
+				BriefFormatter formatter = new BriefFormatter();
+				fh.setFormatter(formatter);
+				logger.setUseParentHandlers(false);
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			// Console logging
+			try {
+				// This block configure the logger with handler
+				ConsoleHandler handler = new ConsoleHandler();
+				logger.addHandler(handler);
+				logger.setUseParentHandlers(false);
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			}
+		}
+
+		vehicleGenerator = new VehicleGenerator();
+		this.segments = segments;
+		this.intersections = intersections;
+	}
+
+	/**
+	 * 
+	 */
 	public void generateVehicle() {
 		if (vehicleGenerator.isCounterZero()) {
 
@@ -81,6 +124,10 @@ public class EnvironmentSetup {
 		}
 	}
 
+	/**
+	 * 
+	 * @param vehDest
+	 */
 	public void checkSegments(int vehDest) {
 		// verificare tronsoane
 		int k = 1;

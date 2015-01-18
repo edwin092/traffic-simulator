@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.Box;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -50,7 +48,7 @@ public class TrafficSimulationView {
 	private int currentSegement = 1;
 
 	private List<Intersection> intersectionButtons = new ArrayList<>();
-	private List<Segment> segmentButtons = new ArrayList<>();
+	private List<Segment> segments = new ArrayList<>();
 
 	private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
 	private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
@@ -62,8 +60,7 @@ public class TrafficSimulationView {
 
 		try {
 			TrafficSimulationView window = new TrafficSimulationView();
-			TrafficSimulationController controller = new TrafficSimulationController(
-					window);
+			new TrafficSimulationController(window);
 			window.frame.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -74,7 +71,6 @@ public class TrafficSimulationView {
 	 * Create the application.
 	 */
 	public TrafficSimulationView() {
-		environmentSetup = new EnvironmentSetup();
 		initialize();
 	}
 
@@ -261,8 +257,12 @@ public class TrafficSimulationView {
 	}
 
 	public void simulate() {
-		int globalCounter = 0;
-		int vehDest = 0;
+		// creates a new environment
+		environmentSetup = new EnvironmentSetup(segments, intersectionButtons,
+				false);
+
+		// int globalCounter = 0;
+		// int vehDest = 0;
 		// do {
 		// segment1.removeAll();
 		// segment1.revalidate();
@@ -290,7 +290,7 @@ public class TrafficSimulationView {
 		// System.out.println(globalCounter);
 		// globalCounter++;
 		// try {
-		// Thread.sleep(2000);
+		// Thread.sleep(100);
 		// } catch (InterruptedException e) {
 		// e.printStackTrace();
 		// }
@@ -369,12 +369,12 @@ public class TrafficSimulationView {
 		this.intersectionButtons = intersectionButtons;
 	}
 
-	public List<Segment> getSegmentButtons() {
-		return segmentButtons;
+	public List<Segment> getSegments() {
+		return segments;
 	}
 
-	public void setSegmentButtons(List<Segment> segmentButtons) {
-		this.segmentButtons = segmentButtons;
+	public void setSegments(List<Segment> segments) {
+		this.segments = segments;
 	}
 
 	public JPanel getPanelSimulation() {
