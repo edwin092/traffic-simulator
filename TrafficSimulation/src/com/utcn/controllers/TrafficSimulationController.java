@@ -33,6 +33,29 @@ public class TrafficSimulationController {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+//			simView.setxClick(e.getX());
+//			simView.setyClick(e.getY());
+//
+//			/* SEGMENT SELECTED */
+//			if (simView.isSegmentSelected()) {
+//
+//				checkSegmentClick();
+//
+//				simView.getPanelSimulation().repaint();
+//			}
+//
+//			/* INTERSECTION SELECTED */
+//			if (simView.isIntersectionSelected()) {
+//
+//				checkIntersectionClick();
+//
+//				simView.getPanelSimulation().repaint();
+//				simView.setIntersectionSelected(false);
+//			}
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
 			simView.setxClick(e.getX());
 			simView.setyClick(e.getY());
 
@@ -52,10 +75,6 @@ public class TrafficSimulationController {
 				simView.getPanelSimulation().repaint();
 				simView.setIntersectionSelected(false);
 			}
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
 		}
 
 		@Override
