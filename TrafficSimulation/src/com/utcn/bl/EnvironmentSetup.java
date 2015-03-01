@@ -11,6 +11,7 @@ import com.utcn.application.BriefFormatter;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
+import com.utcn.utils.TrafficSimulationUtil;
 
 public class EnvironmentSetup {
 
@@ -106,6 +107,16 @@ public class EnvironmentSetup {
 		this.intersections = intersections;
 	}
 
+	private int getRandomDestination() {
+		int random = TrafficSimulationUtil.randInt(1, segments.size() - 1);
+
+		// TODO
+		// check if dest is reachable
+		// use graph algorithms (cost min)
+
+		return random;
+	}
+
 	/**
 	 * 
 	 */
@@ -116,12 +127,35 @@ public class EnvironmentSetup {
 
 			Vehicle newVehicle = vehicleGenerator.generateNewVehicle();
 
-			newVehicle.setCurrentSegment(segments.get(0));
-			newVehicle.setDestination(segments.get(1));
+			configureVehicleParams(newVehicle, segments.get(0));
+			newVehicle.setDestination(segments.get(getRandomDestination()));
 			newVehicle.setRouteList(segments);
 
+			// set current vehicle at starting point
 			segments.get(0).getVehicles().add(newVehicle);
 		}
+	}
+
+	/**
+	 * @param vehicle
+	 * @param segment
+	 */
+	private void configureVehicleParams(Vehicle vehicle, Segment segment) {
+		vehicle.setCurrentSegment(segment);
+		vehicle.setDistanceToObstacle(segment.getSize());
+		vehicle.setCurrentDistance(0);
+	}
+
+	/**
+	 * 
+	 * @param vehicle
+	 * @param currentSegment
+	 * @return
+	 */
+	private Segment getNextSegmentFromRoute(Vehicle vehicle,
+			Segment currentSegment) {
+		return vehicle.getRouteList().get(
+				vehicle.getRouteList().indexOf(currentSegment) + 1);
 	}
 
 	/**
@@ -129,6 +163,85 @@ public class EnvironmentSetup {
 	 * @param vehDest
 	 */
 	public void checkSegments(int vehDest) {
+		// verificare tronsoane
+
+		int k = 1;
+		for (Segment seg : segments) {
+
+			logger.info("\nSEGEMENT " + k + " STATUS:");
+			logger.info("---VEHICLES:");
+
+			// vehicles list from current segment
+			List<Vehicle> segmentVehicles = seg.getVehicles();
+			if (!segmentVehicles.isEmpty()) {
+
+				if (segmentVehicles.size() == 1) {
+					// only one vehicle on segment
+					segmentVehicles.get(0).accelerate();
+				} else {
+					for (int i = 0; i < segmentVehicles.size() - 1; i++) {
+
+						segmentVehicles.get(i).accelerate();
+
+						segmentVehicles.get(i + 1).setDistanceToObstacle(
+								segmentVehicles.get(i + 1)
+										.getDistanceToObstacle()
+										- segmentVehicles.get(i)
+												.getDistanceToObstacle());
+					}
+
+					// accelerate last vehicle from segment
+					segmentVehicles.get(segmentVehicles.size() - 1)
+							.accelerate();
+				}
+
+				if (segmentVehicles.get(0).getDistanceToObstacle() == 0) {
+					// first vehicle reached end of segment
+
+					if (segmentVehicles.get(0).getDestination().getId() == seg
+							.getId()) {
+						// Destination reached
+						segmentVehicles.remove(0);
+					}
+
+					Segment nextSegment = getNextSegmentFromRoute(
+							segmentVehicles.get(0), seg);
+
+					boolean[] trafficLights = seg.getTrafficLights();
+
+					// get direction of next segment (0-left, 1-straight,
+					// 2-right)
+					int dir = seg.getIntersectionOut().getDirection(seg,
+							nextSegment);
+
+					if (trafficLights[dir]) {
+						// traffic light is GREEN
+						configureVehicleParams(segmentVehicles.get(0),
+								nextSegment);
+
+						nextSegment.getVehicles().add(segmentVehicles.get(0));
+
+						segmentVehicles.remove(0);
+					}
+				}
+
+				// log vehicles
+				for (int i = 0; i < segmentVehicles.size(); i++) {
+					logger.info("VEHICLE " + i + " distance: "
+							+ segmentVehicles.get(i).getCurrentDistance());
+				}
+			}
+
+			k++;
+		}
+	}
+
+	/**
+	 * 
+	 * @param vehDest
+	 * @deprecated
+	 */
+	public void checkSegmentsTest(int vehDest) {
 		// verificare tronsoane
 		int k = 1;
 		for (Segment seg : segments) {
@@ -206,10 +319,69 @@ public class EnvironmentSetup {
 
 			k++;
 		}
-
 	}
 
-	public void checkIntersections() {
+	public void manageIntersectionsTrafficLights() {
+		for (Intersection intersection : intersections) {
+			if (intersection.getPhaseCounter() == PHASE_TIME) {
+				// reset counter
+				intersection.setPhaseCounter(0);
+				// switch to next phase
+				intersection.nextPhase();
+
+				// check current phase
+				if (intersection.getCurrentPhase() == 1) {
+					// PHASE 1
+					intersection.setTrafficLightsSouth(new boolean[] { false,
+							true, true });
+					intersection.setTrafficLightsNorth(new boolean[] { false,
+							true, true });
+					intersection.setTrafficLightsEast(new boolean[] { false,
+							false, false });
+					intersection.setTrafficLightsVest(new boolean[] { false,
+							false, false });
+				} else if (intersection.getCurrentPhase() == 2) {
+					// PHASE 2
+					intersection.setTrafficLightsSouth(new boolean[] { false,
+							false, false });
+					intersection.setTrafficLightsNorth(new boolean[] { false,
+							false, false });
+					intersection.setTrafficLightsEast(new boolean[] { false,
+							true, true });
+					intersection.setTrafficLightsVest(new boolean[] { false,
+							true, true });
+				} else if (intersection.getCurrentPhase() == 3) {
+					// PHASE 3
+					intersection.setTrafficLightsSouth(new boolean[] { false,
+							false, true });
+					intersection.setTrafficLightsNorth(new boolean[] { false,
+							false, true });
+					intersection.setTrafficLightsEast(new boolean[] { true,
+							false, false });
+					intersection.setTrafficLightsVest(new boolean[] { true,
+							false, false });
+				} else {
+					// PHASE 4
+					intersection.setTrafficLightsSouth(new boolean[] { true,
+							false, false });
+					intersection.setTrafficLightsNorth(new boolean[] { true,
+							false, false });
+					intersection.setTrafficLightsEast(new boolean[] { false,
+							false, true });
+					intersection.setTrafficLightsVest(new boolean[] { false,
+							false, true });
+				}
+			} else {
+				intersection
+						.setPhaseCounter(intersection.getPhaseCounter() + 1);
+			}
+		}
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void checkIntersectionTests() {
 		// verificare intersectii
 		for (Intersection intersection : intersections) {
 

@@ -20,6 +20,7 @@ public class VehicleGenerator {
 
 		// setare
 		// TODO
+		vehicle.setEngine(new StandardEngine());
 
 		return vehicle;
 	}

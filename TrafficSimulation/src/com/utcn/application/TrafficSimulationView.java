@@ -20,11 +20,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingWorker;
 
 import com.utcn.bl.EnvironmentSetup;
 import com.utcn.controllers.TrafficSimulationController;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
+import com.utcn.models.Vehicle;
 import com.utcn.utils.TrafficSimulationUtil;
 
 public class TrafficSimulationView {
@@ -47,11 +49,16 @@ public class TrafficSimulationView {
 
 	private int currentSegement = 1;
 
+	private int currentSegId = 1;
+	private int currentIntersId = 1;
+
 	private List<Intersection> intersectionButtons = new ArrayList<>();
 	private List<Segment> segments = new ArrayList<>();
 
 	private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
 	private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
+
+	private List<JLabel> labels;
 
 	/**
 	 * Launch the application.
@@ -98,20 +105,20 @@ public class TrafficSimulationView {
 		mnSimulation.add(mntmNewSimulation);
 
 		startMenuItem = new JMenuItem("Start");
-		// startMenuItem.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent e) {
-		//
-		// SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-		// @Override
-		// public Void doInBackground() {
-		// simulate();
-		// return null;
-		// }
-		// };
-		//
-		// worker.execute();
-		// }
-		// });
+		startMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+					@Override
+					public Void doInBackground() {
+						simulate();
+						return null;
+					}
+				};
+
+				worker.execute();
+			}
+		});
 		mnSimulation.add(startMenuItem);
 
 		JMenu mnComponents = new JMenu("Components");
@@ -202,6 +209,17 @@ public class TrafficSimulationView {
 
 					// draw polyline
 					g.drawPolyline(x, y, x.length);
+
+					for (Intersection intersection : intersectionButtons) {
+						panelSimulation.add(intersection);
+					}
+
+					if (labels != null) {
+						for (JLabel lable : labels) {
+							panelSimulation.add(lable);
+							panelSimulation.setComponentZOrder(lable, 0);
+						}
+					}
 				}
 			}
 		};
@@ -211,90 +229,125 @@ public class TrafficSimulationView {
 		panelSimulation.setPreferredSize(new Dimension(1500, 1500));
 
 		frame.getContentPane().setLayout(null);
-
-		// JLabel lblO = new JLabel("O");
-		// segment1.add(lblO);
-		// lblO.setBounds(1, 13, 10, 10);
-
 	}
 
 	/**
+	 * Save current x, y coordinates for the polylines.
 	 * 
+	 * @param x
+	 *            the X coordinate
+	 * @param y
+	 *            the Y coordinate
 	 */
 	public void saveXYValues(Integer x, Integer y) {
 		List<Integer> xList = segmentCoordsX.get(currentSegement);
 		List<Integer> yList = segmentCoordsY.get(currentSegement);
 
 		if (xList == null) {
-			// segmentCoordsX.put(currentSegement, new ArrayList<Integer>());
-			// segmentCoordsY.put(currentSegement, new ArrayList<Integer>());
-
-			List<Integer> newXList = new ArrayList<Integer>();
-			List<Integer> newYList = new ArrayList<Integer>();
-
-			if (x == null && y == null) {
-				newXList.add(xClick);
-				newYList.add(yClick);
-			} else {
-				newXList.add(x);
-				newYList.add(y);
-			}
-
-			segmentCoordsX.put(currentSegement, newXList);
-			segmentCoordsY.put(currentSegement, newYList);
-		} else {
-			if (x == null && y == null) {
-				xList.add(xClick);
-				yList.add(yClick);
-			} else {
-				xList.add(x);
-				yList.add(y);
-			}
-
-			segmentCoordsX.put(currentSegement, xList);
-			segmentCoordsY.put(currentSegement, yList);
+			xList = new ArrayList<Integer>();
+			yList = new ArrayList<Integer>();
 		}
+
+		if (x == null && y == null) {
+			xList.add(xClick);
+			yList.add(yClick);
+		} else {
+			xList.add(x);
+			yList.add(y);
+		}
+
+		segmentCoordsX.put(currentSegement, xList);
+		segmentCoordsY.put(currentSegement, yList);
 	}
 
+	/**
+	 * 
+	 */
 	public void simulate() {
 		// creates a new environment
 		environmentSetup = new EnvironmentSetup(segments, intersectionButtons,
 				false);
 
-		// int globalCounter = 0;
-		// int vehDest = 0;
-		// do {
-		// segment1.removeAll();
-		// segment1.revalidate();
-		// segment1.repaint();
-		// segment2.removeAll();
-		// segment2.revalidate();
-		// segment2.repaint();
+		labels = new ArrayList<>();
 
-		// environmentSetup.generateVehicle();
-		// environmentSetup.checkSegments(vehDest);
-		// environmentSetup.checkIntersections();
-		//
-		// for (int i = 0; i < environmentSetup.getSegments().size(); i++) {
-		// for (Vehicle veh : environmentSetup.getSegments().get(i)
-		// .getVehicles()) {
-		// JLabel lblO = new JLabel("O");
-		// if (i == 0) {
-		// segment1.add(lblO);
-		// } else {
-		// segment2.add(lblO);
-		// }
-		// lblO.setBounds((veh.getCurrentDistance() * 15), 13, 10, 10);
-		// }
-		// }
-		// System.out.println(globalCounter);
-		// globalCounter++;
-		// try {
-		// Thread.sleep(100);
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// } while (globalCounter < 200);
+		int globalCounter = 0;
+		int vehDest = 0;
+		do {
+			labels.clear();
+
+			// panelSimulation.removeAll();
+			// panelSimulation.revalidate();
+
+			// generate new vehicle
+			environmentSetup.generateVehicle();
+			// segment acceleration
+			environmentSetup.checkSegments(vehDest);
+			// manage intersections traffic lights
+			environmentSetup.manageIntersectionsTrafficLights();
+
+			for (Segment segment : segments) {
+				for (Vehicle veh : segment.getVehicles()) {
+					JLabel lblO = new JLabel("O");
+
+					int[] lineCoordsX = veh.getCurrentSegment()
+							.getLineCoordsX();
+					int[] lineCoordsY = veh.getCurrentSegment()
+							.getLineCoordsY();
+
+					int segSize = 0;
+
+					for (int i = 0; i < lineCoordsX.length - 1; i++) {
+
+						segSize += TrafficSimulationUtil.distanceBetweenPoints(
+								lineCoordsX[i], lineCoordsY[i],
+								lineCoordsX[i + 1], lineCoordsY[i + 1]);
+
+						System.out.println("ALO: " + segSize);
+
+						if (veh.getCurrentDistance() <= segSize) {
+
+							int posX = 0;
+							int posY = 0;
+
+							if (lineCoordsX[i + 1] > lineCoordsX[i]) {
+								posX = lineCoordsX[i]
+										+ veh.getCurrentDistance();
+							} else if (lineCoordsX[i + 1] < lineCoordsX[i]) {
+								posX = lineCoordsX[i]
+										- veh.getCurrentDistance();
+							}
+
+							if (lineCoordsY[i + 1] > lineCoordsY[i]) {
+								posY = lineCoordsY[i]
+										+ veh.getCurrentDistance();
+							} else if (lineCoordsY[i + 1] < lineCoordsY[i]) {
+								posY = lineCoordsY[i]
+										- veh.getCurrentDistance();
+							}
+
+							System.out.println("Positions: " + posX + " "
+									+ posY);
+
+							lblO.setBounds(posX, posY, 10, 10);
+							// panelSimulation.add(lblO);
+							// panelSimulation.setComponentZOrder(lblO, 0);
+							labels.add(lblO);
+
+							panelSimulation.removeAll();
+							panelSimulation.revalidate();
+							panelSimulation.repaint();
+						}
+					}
+				}
+			}
+			// System.out.println(globalCounter);
+			globalCounter++;
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		} while (globalCounter < 200);
 	}
 
 	public void addMouseClickListener(MouseListener mouseListener) {
@@ -411,6 +464,30 @@ public class TrafficSimulationView {
 
 	public void incrementCurrentSegement() {
 		this.currentSegement++;
+	}
+
+	public int getCurrentSegId() {
+		return currentSegId;
+	}
+
+	public void setCurrentSegId(int currentSegId) {
+		this.currentSegId = currentSegId;
+	}
+
+	public void incrementCurrentSegId() {
+		this.currentSegId++;
+	}
+
+	public int getCurrentIntersId() {
+		return currentIntersId;
+	}
+
+	public void setCurrentIntersId(int currentIntersId) {
+		this.currentIntersId = currentIntersId;
+	}
+
+	public void incrementCurrentIntersId() {
+		this.currentIntersId++;
 	}
 
 	public List<Integer> getCurrentSegmentXCoords() {

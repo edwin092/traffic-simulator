@@ -6,11 +6,20 @@ public class Intersection extends JButton {
 
 	private static final long serialVersionUID = 1L;
 
+	private int id;
+
 	// semafoare din intersectie: true-verde, false-rosu
 	private boolean trafficLightNorth;
 	private boolean trafficLightSouth;
 	private boolean trafficLightVest;
 	private boolean trafficLightEast;
+
+	// semafoare din intersectie: true-verde, false-rosu
+	// 0 - left, 1 - straight, 2 - right
+	private boolean[] trafficLightsNorth;
+	private boolean[] trafficLightsSouth;
+	private boolean[] trafficLightsVest;
+	private boolean[] trafficLightsEast;
 
 	/* phases */
 	private int phases = 4; // 4 phases
@@ -32,6 +41,14 @@ public class Intersection extends JButton {
 	private boolean segmentSouthSelected;
 	private boolean segmentEastSelected;
 	private boolean segmentVestSelected;
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	public boolean isTrafficLightNorth() {
 		return trafficLightNorth;
@@ -189,6 +206,38 @@ public class Intersection extends JButton {
 		this.currentPhase = currentPhase;
 	}
 
+	public boolean[] getTrafficLightsNorth() {
+		return trafficLightsNorth;
+	}
+
+	public void setTrafficLightsNorth(boolean[] trafficLightsNorth) {
+		this.trafficLightsNorth = trafficLightsNorth;
+	}
+
+	public boolean[] getTrafficLightsSouth() {
+		return trafficLightsSouth;
+	}
+
+	public void setTrafficLightsSouth(boolean[] trafficLightsSouth) {
+		this.trafficLightsSouth = trafficLightsSouth;
+	}
+
+	public boolean[] getTrafficLightsVest() {
+		return trafficLightsVest;
+	}
+
+	public void setTrafficLightsVest(boolean[] trafficLightsVest) {
+		this.trafficLightsVest = trafficLightsVest;
+	}
+
+	public boolean[] getTrafficLightsEast() {
+		return trafficLightsEast;
+	}
+
+	public void setTrafficLightsEast(boolean[] trafficLightsEast) {
+		this.trafficLightsEast = trafficLightsEast;
+	}
+
 	/**
 	 * Switch to the next phase
 	 */
@@ -218,5 +267,65 @@ public class Intersection extends JButton {
 		segmentVestSelected = false;
 		segmentNorthSelected = false;
 		segmentSouthSelected = false;
+	}
+
+	/**
+	 * 
+	 * @param currentSeg
+	 * @param nextSeg
+	 * @return
+	 */
+	public int getDirection(Segment currentSeg, Segment nextSeg) {
+
+		if (segmentEastIn.getId() == currentSeg.getId()) {
+			// EAST
+			if (segmentNorthOut.getId() == nextSeg.getId()) {
+				// right
+				return 2;
+			}
+			if (segmentVestOut.getId() == nextSeg.getId()) {
+				// straight
+				return 1;
+			}
+			if (segmentSouthOut.getId() == nextSeg.getId()) {
+				// left
+				return 0;
+			}
+		} else if (segmentVestIn.getId() == currentSeg.getId()) {
+			// VEST
+			if (segmentNorthOut.getId() == nextSeg.getId()) {
+				return 0;
+			}
+			if (segmentEastOut.getId() == nextSeg.getId()) {
+				return 1;
+			}
+			if (segmentSouthOut.getId() == nextSeg.getId()) {
+				return 2;
+			}
+		} else if (segmentNorthIn.getId() == currentSeg.getId()) {
+			// NORTH
+			if (segmentEastOut.getId() == nextSeg.getId()) {
+				return 0;
+			}
+			if (segmentVestOut.getId() == nextSeg.getId()) {
+				return 2;
+			}
+			if (segmentSouthOut.getId() == nextSeg.getId()) {
+				return 1;
+			}
+		} else {
+			// SOUTH
+			if (segmentNorthOut.getId() == nextSeg.getId()) {
+				return 1;
+			}
+			if (segmentVestOut.getId() == nextSeg.getId()) {
+				return 0;
+			}
+			if (segmentEastOut.getId() == nextSeg.getId()) {
+				return 2;
+			}
+		}
+
+		throw new NullPointerException("Segments missing!");
 	}
 }

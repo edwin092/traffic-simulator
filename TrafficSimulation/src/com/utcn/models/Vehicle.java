@@ -10,6 +10,9 @@ public class Vehicle {
 	private List<Segment> routeList;
 	private Segment currentSegment;
 	private int currentDistance; // distanta parcursa pe tronsonul curent
+	private double distanceToObstacle;
+	private double speed;
+	private Engine engine;
 
 	public Vehicle() {
 		routeList = new ArrayList<Segment>();
@@ -53,5 +56,37 @@ public class Vehicle {
 
 	public void setCurrentDistance(int currentDistance) {
 		this.currentDistance = currentDistance;
+	}
+
+	public double getDistanceToObstacle() {
+		return distanceToObstacle;
+	}
+
+	public void setDistanceToObstacle(double distanceToObstacle) {
+		this.distanceToObstacle = distanceToObstacle;
+	}
+
+	public double getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(double speed) {
+		this.speed = speed;
+	}
+
+	public Engine getEngine() {
+		return engine;
+	}
+
+	public void setEngine(Engine engine) {
+		this.engine = engine;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public double accelerate() {
+		return this.engine.accelerate(this);
 	}
 }

@@ -23,7 +23,10 @@ public class TrafficSimulationController {
 		this.simView = simView;
 
 		simView.addMouseClickListener(new MouseClickListener());
-		simView.addSimulationStartListener(new SimulationStartListener());
+
+		// TODO
+		// not working with swingWorker
+		// simView.addSimulationStartListener(new SimulationStartListener());
 	}
 
 	class MouseClickListener implements MouseListener {
@@ -90,14 +93,14 @@ public class TrafficSimulationController {
 		}
 
 		/**
-		 * Get the length of the click zone based on the segment direction
+		 * Get the length of the click zone based on the segment direction.
 		 * 
-		 * @param add
+		 * @param isAdd
 		 *            true - add ; false - subtract
 		 * @return length of click zone
 		 */
-		private int getClickZoneLength(boolean add) {
-			if (add) {
+		private int getClickZoneLength(boolean isAdd) {
+			if (isAdd) {
 				return TrafficSimulationView.INTERSECTION_SIZE / 2
 						+ TrafficSimulationView.INTERSECTION_SIZE / 4;
 			} else {
@@ -108,7 +111,7 @@ public class TrafficSimulationController {
 
 		/**
 		 * Set the segment out field for the current intersection based on the
-		 * selected side
+		 * selected side.
 		 * 
 		 * @param intersection
 		 *            current intersection
@@ -133,7 +136,7 @@ public class TrafficSimulationController {
 		}
 
 		/**
-		 * Check to see if segment can be created and if true create it
+		 * Check to see if segment can be created and if true create it.
 		 */
 		private void checkSegmentClick() {
 
@@ -168,6 +171,9 @@ public class TrafficSimulationController {
 
 						// create new segment
 						Segment segment = new Segment();
+						// set segment id
+						segment.setId(simView.getCurrentSegId());
+						simView.incrementCurrentSegId();
 
 						// set segment intersections
 						segment.setIntersectionIn(firstSelectedIntersection);
@@ -197,6 +203,7 @@ public class TrafficSimulationController {
 						setSegmentOutForIntersection(firstSelectedIntersection,
 								segment);
 
+						simView.getSegments().add(segment);
 						simView.incrementCurrentSegement();
 						resetAllSegments();
 						simView.setSegmentSelected(false);
@@ -265,6 +272,7 @@ public class TrafficSimulationController {
 						setSegmentOutForIntersection(firstSelectedIntersection,
 								segment);
 
+						simView.getSegments().add(segment);
 						simView.incrementCurrentSegement();
 						resetAllSegments();
 						simView.setSegmentSelected(false);
@@ -330,6 +338,7 @@ public class TrafficSimulationController {
 						setSegmentOutForIntersection(firstSelectedIntersection,
 								segment);
 
+						simView.getSegments().add(segment);
 						simView.incrementCurrentSegement();
 						resetAllSegments();
 						simView.setSegmentSelected(false);
@@ -399,6 +408,7 @@ public class TrafficSimulationController {
 						setSegmentOutForIntersection(firstSelectedIntersection,
 								segment);
 
+						simView.getSegments().add(segment);
 						simView.incrementCurrentSegement();
 						resetAllSegments();
 						simView.setSegmentSelected(false);
@@ -416,7 +426,7 @@ public class TrafficSimulationController {
 		}
 
 		/**
-		 * Check to see if intersection can be created and if true create it
+		 * Check to see if intersection can be created and if true create it.
 		 */
 		private void checkIntersectionClick() {
 
@@ -433,6 +443,10 @@ public class TrafficSimulationController {
 			}
 
 			Intersection intersection = new Intersection();
+			// set id
+			intersection.setId(simView.getCurrentIntersId());
+			simView.incrementCurrentIntersId();
+
 			intersection.setEnabled(false);
 			intersection.setBounds(simView.getxClick(), simView.getyClick(),
 					TrafficSimulationView.INTERSECTION_SIZE,
@@ -512,6 +526,5 @@ public class TrafficSimulationController {
 			simView.simulate();
 
 		}
-
 	}
 }
