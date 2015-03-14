@@ -7,134 +7,136 @@ import com.utcn.utils.TrafficSimulationUtil;
 
 public class Segment {
 
-	// private static final long serialVersionUID = 1L;
+    // private static final long serialVersionUID = 1L;
 
-	private int id;
+    private int id;
 
-	private List<Vehicle> vehicles;
-	private int length = 20;
-	// legatura intersectii
-	private Intersection intersectionIn;
-	private Intersection intersectionOut;
+    private List<Vehicle> vehicles;
+    private int length = 20;
+    // legatura intersectii
+    private Intersection intersectionIn;
+    private Intersection intersectionOut;
 
-	// If way = true then [Intersection ->] else [-> Intersection]
-	private boolean way;
+    // If way = true then [Intersection ->] else [-> Intersection]
+    private boolean way;
 
-	// polyline coordinates
-	private int[] lineCoordsX;
-	private int[] lineCoordsY;
+    // polyline coordinates
+    private int[] lineCoordsX;
+    private int[] lineCoordsY;
 
-	private final static int SIZE_MODIFIER = 2;
+    public Segment() {
+        vehicles = new ArrayList<Vehicle>();
+    }
 
-	public Segment() {
-		vehicles = new ArrayList<Vehicle>();
-	}
+    public int getId() {
+        return id;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public List<Vehicle> getVehicles() {
+        return vehicles;
+    }
 
-	public List<Vehicle> getVehicles() {
-		return vehicles;
-	}
+    public void setVehicles(List<Vehicle> vehicles) {
+        this.vehicles = vehicles;
+    }
 
-	public void setVehicles(List<Vehicle> vehicles) {
-		this.vehicles = vehicles;
-	}
+    /**
+     * @deprecated
+     */
+    public int getLength() {
+        return length;
+    }
 
-	public int getLength() {
-		return length;
-	}
+    /**
+     * @param length
+     * @deprecated
+     */
+    public void setLength(int length) {
+        this.length = length;
+    }
 
-	public void setLength(int length) {
-		this.length = length;
-	}
+    public Intersection getIntersectionIn() {
+        return intersectionIn;
+    }
 
-	public Intersection getIntersectionIn() {
-		return intersectionIn;
-	}
+    public void setIntersectionIn(Intersection intersectionIn) {
+        this.intersectionIn = intersectionIn;
+    }
 
-	public void setIntersectionIn(Intersection intersectionIn) {
-		this.intersectionIn = intersectionIn;
-	}
+    public Intersection getIntersectionOut() {
+        return intersectionOut;
+    }
 
-	public Intersection getIntersectionOut() {
-		return intersectionOut;
-	}
+    public void setIntersectionOut(Intersection intersectionOut) {
+        this.intersectionOut = intersectionOut;
+    }
 
-	public void setIntersectionOut(Intersection intersectionOut) {
-		this.intersectionOut = intersectionOut;
-	}
+    public boolean isWay() {
+        return way;
+    }
 
-	public boolean isWay() {
-		return way;
-	}
+    public void setWay(boolean way) {
+        this.way = way;
+    }
 
-	public void setWay(boolean way) {
-		this.way = way;
-	}
+    public int[] getLineCoordsX() {
+        return lineCoordsX;
+    }
 
-	public int[] getLineCoordsX() {
-		return lineCoordsX;
-	}
+    public void setLineCoordsX(int[] lineCoordsX) {
+        this.lineCoordsX = lineCoordsX;
+    }
 
-	public void setLineCoordsX(int[] lineCoordsX) {
-		this.lineCoordsX = lineCoordsX;
-	}
+    public int[] getLineCoordsY() {
+        return lineCoordsY;
+    }
 
-	public int[] getLineCoordsY() {
-		return lineCoordsY;
-	}
+    public void setLineCoordsY(int[] lineCoordsY) {
+        this.lineCoordsY = lineCoordsY;
+    }
 
-	public void setLineCoordsY(int[] lineCoordsY) {
-		this.lineCoordsY = lineCoordsY;
-	}
+    /**
+     * @return
+     */
+    public double getSize() {
+        int sizeInPixels = 0;
+        for (int i = 0; i < lineCoordsX.length - 1; i++) {
+            sizeInPixels += TrafficSimulationUtil.distanceBetweenPoints(lineCoordsX[i],
+                    lineCoordsY[i], lineCoordsX[i + 1], lineCoordsY[i + 1]);
+        }
 
-	/**
-	 * 
-	 * @return
-	 */
-	public int getSize() {
-		int size = 0;
-		for (int i = 0; i < lineCoordsX.length - 1; i++) {
-			size += TrafficSimulationUtil.distanceBetweenPoints(lineCoordsX[i],
-					lineCoordsY[i], lineCoordsX[i + 1], lineCoordsY[i + 1]);
-		}
+        return TrafficSimulationUtil.convertPixelsToMeters(sizeInPixels);
+    }
 
-		return SIZE_MODIFIER * size;
-	}
+    /**
+     * Returns traffic lights for current segment.
+     *
+     * @return
+     */
+    public boolean[] getTrafficLights() {
 
-	/**
-	 * Returns traffic lights for current segment.
-	 * 
-	 * @param segment
-	 * @return
-	 */
-	public boolean[] getTrafficLights() {
-
-		if (intersectionOut != null
-				&& intersectionOut.getSegmentNorthIn().getId() == this.id
-				|| intersectionOut.getSegmentNorthOut().getId() == this.id) {
-			// NORTH
-			return intersectionOut.getTrafficLightsNorth();
-		} else if (intersectionOut != null
-				&& intersectionOut.getSegmentSouthIn().getId() == this.id
-				|| intersectionOut.getSegmentSouthOut().getId() == this.id) {
-			// SOUTH
-			return intersectionOut.getTrafficLightsSouth();
-		} else if (intersectionOut != null
-				&& intersectionOut.getSegmentEastIn().getId() == this.id
-				|| intersectionOut.getSegmentEastOut().getId() == this.id) {
-			// EAST
-			return intersectionOut.getTrafficLightsEast();
-		} else {
-			// VEST
-			return intersectionOut.getTrafficLightsVest();
-		}
-
-	}
+        if (intersectionOut != null) {
+            if ((intersectionOut.getSegmentNorthIn() != null && intersectionOut.getSegmentNorthIn().getId() == this.id)
+                    || (intersectionOut.getSegmentNorthOut() != null && intersectionOut.getSegmentNorthOut().getId() == this.id)) {
+                // NORTH
+                return intersectionOut.getTrafficLightsNorth();
+            } else if ((intersectionOut.getSegmentSouthIn() != null && intersectionOut.getSegmentSouthIn().getId() == this.id)
+                    || (intersectionOut.getSegmentSouthOut() != null && intersectionOut.getSegmentSouthOut().getId() == this.id)) {
+                // SOUTH
+                return intersectionOut.getTrafficLightsSouth();
+            } else if ((intersectionOut.getSegmentEastIn() != null && intersectionOut.getSegmentEastIn().getId() == this.id)
+                    || (intersectionOut.getSegmentEastOut() != null && intersectionOut.getSegmentEastOut().getId() == this.id)) {
+                // EAST
+                return intersectionOut.getTrafficLightsEast();
+            } else {
+                // VEST
+                return intersectionOut.getTrafficLightsVest();
+            }
+        }
+        return null;
+    }
 }

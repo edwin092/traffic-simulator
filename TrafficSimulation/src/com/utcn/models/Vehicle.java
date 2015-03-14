@@ -1,92 +1,120 @@
 package com.utcn.models;
 
+import com.utcn.utils.TrafficSimulationUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Vehicle {
 
-	private int currentSpeed;
-	private Segment destination;
-	private List<Segment> routeList;
-	private Segment currentSegment;
-	private int currentDistance; // distanta parcursa pe tronsonul curent
-	private double distanceToObstacle;
-	private double speed;
-	private Engine engine;
+    private int currentSpeed;
+    private Segment destination;
+    private List<Segment> routeList;
+    private Segment currentSegment;
+    private double currentDistance; // distanta parcursa pe tronsonul curent
+    private double distanceToObstacle;
+    private double speed;
+    private Engine engine;
 
-	public Vehicle() {
-		routeList = new ArrayList<Segment>();
-	}
+    // current pos in pixels
+    private double posX;
+    private double posY;
 
-	public int getCurrentSpeed() {
-		return currentSpeed;
-	}
 
-	public void setCurrentSpeed(int currentSpeed) {
-		this.currentSpeed = currentSpeed;
-	}
+    public Vehicle() {
+        routeList = new ArrayList<Segment>();
+    }
 
-	public Segment getDestination() {
-		return destination;
-	}
+    /**
+     * @deprecated
+     */
+    public int getCurrentSpeed() {
+        return currentSpeed;
+    }
 
-	public void setDestination(Segment destination) {
-		this.destination = destination;
-	}
+    /**
+     * @deprecated
+     */
+    public void setCurrentSpeed(int currentSpeed) {
+        this.currentSpeed = currentSpeed;
+    }
 
-	public List<Segment> getRouteList() {
-		return routeList;
-	}
+    public Segment getDestination() {
+        return destination;
+    }
 
-	public void setRouteList(List<Segment> routeList) {
-		this.routeList = routeList;
-	}
+    public void setDestination(Segment destination) {
+        this.destination = destination;
+    }
 
-	public Segment getCurrentSegment() {
-		return currentSegment;
-	}
+    public List<Segment> getRouteList() {
+        return routeList;
+    }
 
-	public void setCurrentSegment(Segment currentSegment) {
-		this.currentSegment = currentSegment;
-	}
+    public void setRouteList(List<Segment> routeList) {
+        this.routeList = routeList;
+    }
 
-	public int getCurrentDistance() {
-		return currentDistance;
-	}
+    public Segment getCurrentSegment() {
+        return currentSegment;
+    }
 
-	public void setCurrentDistance(int currentDistance) {
-		this.currentDistance = currentDistance;
-	}
+    public void setCurrentSegment(Segment currentSegment) {
+        this.currentSegment = currentSegment;
+    }
 
-	public double getDistanceToObstacle() {
-		return distanceToObstacle;
-	}
+    public double getCurrentDistance() {
+        return currentDistance;
+    }
 
-	public void setDistanceToObstacle(double distanceToObstacle) {
-		this.distanceToObstacle = distanceToObstacle;
-	}
+    public void setCurrentDistance(double currentDistance) {
+        this.currentDistance = currentDistance;
+    }
 
-	public double getSpeed() {
-		return speed;
-	}
+    public double getDistanceToObstacle() {
+        return distanceToObstacle;
+    }
 
-	public void setSpeed(double speed) {
-		this.speed = speed;
-	}
+    public void setDistanceToObstacle(double distanceToObstacle) {
+        this.distanceToObstacle = distanceToObstacle;
+    }
 
-	public Engine getEngine() {
-		return engine;
-	}
+    public double getSpeed() {
+        return speed;
+    }
 
-	public void setEngine(Engine engine) {
-		this.engine = engine;
-	}
+    public void setSpeed(double speed) {
+        this.speed = TrafficSimulationUtil.round(speed, 2);
+    }
 
-	/**
-	 * 
-	 * @return
-	 */
-	public double accelerate() {
-		return this.engine.accelerate(this);
-	}
+    public Engine getEngine() {
+        return engine;
+    }
+
+    public void setEngine(Engine engine) {
+        this.engine = engine;
+    }
+
+    public double getPosX() {
+        return posX;
+    }
+
+    public void setPosX(double posX) {
+        this.posX = posX;
+    }
+
+    public double getPosY() {
+        return posY;
+    }
+
+    public void setPosY(double posY) {
+        this.posY = posY;
+    }
+
+    /**
+     * @return
+     */
+    public double accelerate() {
+        return this.engine.accelerate(this);
+    }
 }

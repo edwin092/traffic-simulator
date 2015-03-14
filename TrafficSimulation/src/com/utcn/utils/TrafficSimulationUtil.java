@@ -1,55 +1,129 @@
 package com.utcn.utils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
 
 public class TrafficSimulationUtil {
 
-	// prevent this class from being instanced
-	private TrafficSimulationUtil() {
-	}
+    /**
+     *
+     */
+    public static final double CONVERSION_UNIT = 0.5;
 
-	/**
-	 * Convert a List of Integer to a new int[].
-	 * 
-	 * @param list
-	 *            the list of integers
-	 * @return the new int[]
-	 */
-	public static int[] convertList(List<Integer> list) {
-		int[] x = new int[list.size()];
+    // prevent this class from being instanced
+    private TrafficSimulationUtil() {
+    }
 
-		for (int i = 0; i < list.size(); i++) {
-			x[i] = list.get(i);
-		}
+    /**
+     * Convert a List of Integer to a new int[].
+     *
+     * @param list the list of integers
+     * @return the new int[]
+     */
+    public static int[] convertList(List<Integer> list) {
+        int[] x = new int[list.size()];
 
-		return x;
-	}
+        for (int i = 0; i < list.size(); i++) {
+            x[i] = list.get(i);
+        }
 
-	/**
-	 * 
-	 * @param min
-	 * @param max
-	 * @return
-	 */
-	public static int randInt(int min, int max) {
-		Random rand = new Random();
+        return x;
+    }
 
-		int randomNum = rand.nextInt((max - min) + 1) + min;
+    /**
+     * @param min
+     * @param max
+     * @return
+     */
+    public static int randInt(int min, int max) {
+        Random rand = new Random();
 
-		return randomNum;
-	}
+        int randomNum = rand.nextInt((max - min) + 1) + min;
 
-	/**
-	 * 
-	 * @param x1
-	 * @param y1
-	 * @param x2
-	 * @param y2
-	 * @return
-	 */
-	public static int distanceBetweenPoints(int x1, int y1, int x2, int y2) {
-		return (int) Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-	}
+        return randomNum;
+    }
+
+    /**
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return
+     */
+    public static int distanceBetweenPoints(int x1, int y1, int x2, int y2) {
+        return (int) Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    }
+
+    /**
+     * @param x
+     * @return
+     */
+    public static double convertMetersToPixels(double x) {
+        return x / CONVERSION_UNIT;
+    }
+
+    /**
+     * @param x
+     * @return
+     */
+    public static double convertPixelsToMeters(double x) {
+        return x * CONVERSION_UNIT;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
+
+    /**
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @param currentDist
+     * @return
+     */
+    public static int[] getVehiclePosition(int x1, int y1, int x2, int y2, double currentDist) {
+        int bigOrSmallX;
+        int bigOrSmallY;
+
+        if (x1 > x2) {
+            // smaller
+            bigOrSmallX = x2;
+        } else {
+            // bigger
+            bigOrSmallX = -x2;
+        }
+
+        if (y1 > y2) {
+            // smaller
+            bigOrSmallY = y2;
+        } else {
+            // bigger
+            bigOrSmallY = -y2;
+        }
+
+        double dx = Math.abs(x1 - x2);
+        double dy = Math.abs(y1 - y2);
+        double m = round(dy / dx, 2);
+        double alpha = round(Math.atan(m), 2);
+        double totalDist = distanceBetweenPoints(x1, y1, x2, y2);
+
+        double dxN = round(Math.abs((totalDist - currentDist) * Math.cos(alpha)), 2);
+
+        int xN = Math.abs((int) (bigOrSmallX + dxN));
+
+        double dyN = round(Math.abs((totalDist - currentDist) * Math.sin(alpha)), 2);
+
+        int yN = Math.abs((int) (bigOrSmallY + dyN));
+
+        return new int[]{xN, yN};
+    }
 
 }
