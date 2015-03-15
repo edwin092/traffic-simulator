@@ -1,14 +1,13 @@
 package com.utcn.application;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -21,6 +20,10 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingWorker;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import com.utcn.bl.EnvironmentSetup;
 import com.utcn.controllers.TrafficSimulationController;
@@ -33,6 +36,7 @@ public class TrafficSimulationView {
 
     // public static final int SEGMENT_LENGTH = 100;
     // public static final int SEGMENT_WIDTH = 40;
+    public static final int SIMULATION_TIME = 200;
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
     public static final int TRAFFIC_LIGHT_SIZE = 15;
@@ -45,6 +49,7 @@ public class TrafficSimulationView {
     private boolean isIntersectionSelected;
     private boolean isSegmentSelected;
     private JPanel panelSimulation;
+    private StyledDocument textPaneSimulationLog;
     private JMenuItem startMenuItem;
 
     private int currentSegment = 1;
@@ -174,7 +179,16 @@ public class TrafficSimulationView {
         scrollPaneLog.setBounds(50, 30, 300, 500);
 
         JTextPane textPaneLog = new JTextPane();
+        textPaneLog.setEditable(false);
         scrollPaneLog.setViewportView(textPaneLog);
+
+        textPaneSimulationLog = textPaneLog.getStyledDocument();
+
+        try {
+            textPaneSimulationLog.insertString(textPaneSimulationLog.getLength(), "Simulation Log", null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
 
         JScrollPane scrollPaneStatistics = new JScrollPane();
         scrollPaneStatistics
@@ -259,22 +273,52 @@ public class TrafficSimulationView {
     }
 
     /**
+     * Adds a new log entry in the logging area.
      *
+     * @param text the text to be added
+     */
+    public void addNewLogEntry(String text) {
+        try {
+            textPaneSimulationLog.insertString(textPaneSimulationLog.getLength(), text, null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Clears the logging area.
+     */
+    public void clearLogArea() {
+        try {
+            textPaneSimulationLog.remove(0, textPaneSimulationLog.getLength());
+            addNewLogEntry("Simulation Log");
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Start the simulation.
      */
     public void simulate() {
+        clearLogArea();
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
+
+        addNewLogEntry("\nSimulation started at " + dateFormat.format(date) + "\n\n");
+
         // creates a new environment
         environmentSetup = new EnvironmentSetup(segments, intersectionButtons,
                 false);
 
         labels = new ArrayList<>();
 
-        int globalCounter = 0;
+        int globalCounter = 1;
         int vehDest = 0;
         do {
+            addNewLogEntry("\n--------------------------------------\nCounter: " + globalCounter +
+                    "\n--------------------------------------\n");
             labels.clear();
-
-            // panelSimulation.removeAll();
-            // panelSimulation.revalidate();
 
             // generate new vehicle
             environmentSetup.generateVehicle();
@@ -285,10 +329,13 @@ public class TrafficSimulationView {
 
             for (Segment segment : segments) {
 
-                System.out.println("Segment length: " + segment.getSize());
-                System.out.println("Segment vehicles: " + segment.getVehicles().size());
+                addNewLogEntry("\nSegment " + segment.getId() + ":" + "\n");
 
                 for (Vehicle veh : segment.getVehicles()) {
+
+                    addNewLogEntry("\nVehicle: \nCurrent distance: " + veh.getCurrentDistance() + "\nCurrent speed: "
+                            + veh.getSpeed() + "\nDistance to next obstacle: " + veh.getDistanceToObstacle() + "\n");
+
                     JLabel lblO = new JLabel("O");
 
                     int[] lineCoordsX = veh.getCurrentSegment()
@@ -297,7 +344,6 @@ public class TrafficSimulationView {
                             .getLineCoordsY();
 
                     int segSize = 0;
-
                     for (int i = 0; i < lineCoordsX.length - 1; i++) {
 
                         if (veh.getPosY() == 0) {
@@ -311,15 +357,8 @@ public class TrafficSimulationView {
                         double currentDistInPixels = TrafficSimulationUtil.convertMetersToPixels(veh.getCurrentDistance());
 
                         if (currentDistInPixels <= segSize) {
-
-//                            double posX = 0;
-//                            double posY = 0;
-
-
                             int[] newValues = TrafficSimulationUtil.getVehiclePosition(
                                     lineCoordsX[i], lineCoordsY[i], lineCoordsX[i + 1], lineCoordsY[i + 1], currentDistInPixels);
-
-                            System.out.println("----Veh: " + veh.getCurrentDistance() + ", " + veh.getSpeed() + ", " + veh.getDistanceToObstacle());
 
                             lblO.setBounds(newValues[0], newValues[1], 10, 10);
 
@@ -333,15 +372,15 @@ public class TrafficSimulationView {
                 }
             }
 
-            System.out.println("COUNTER: " + globalCounter);
-
             globalCounter++;
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (globalCounter < 300);
+        } while (globalCounter < SIMULATION_TIME);
+
+        addNewLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
     }
 
     public void addMouseClickListener(MouseListener mouseListener) {
@@ -430,6 +469,14 @@ public class TrafficSimulationView {
 
     public void setPanelSimulation(JPanel panelSimulation) {
         this.panelSimulation = panelSimulation;
+    }
+
+    public StyledDocument getTextPaneSimulationLog() {
+        return textPaneSimulationLog;
+    }
+
+    public void setTextPaneSimulationLog(StyledDocument textPaneSimulationLog) {
+        this.textPaneSimulationLog = textPaneSimulationLog;
     }
 
     public Map<Integer, List<Integer>> getSegmentCoordsX() {
