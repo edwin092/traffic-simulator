@@ -214,34 +214,28 @@ public class EnvironmentSetup {
                             .getId()) {
                         // Destination reached
                         segmentVehicles.remove(0);
-                    }
+                    } else {
+                        Segment nextSegment = getNextSegmentFromRoute(
+                                segmentVehicles.get(0), seg);
 
-                    Segment nextSegment = getNextSegmentFromRoute(
-                            segmentVehicles.get(0), seg);
+                        boolean[] trafficLights = seg.getTrafficLights();
 
-                    boolean[] trafficLights = seg.getTrafficLights();
-
-                    // get direction of next segment (0-left, 1-straight,
-                    // 2-right)
-                    int dir = seg.getIntersectionOut().getDirection(seg,
-                            nextSegment);
-
-                    if (trafficLights[dir]) {
-                        // traffic light is GREEN
-                        configureVehicleParams(segmentVehicles.get(0),
+                        // get direction of next segment (0-left, 1-straight,
+                        // 2-right)
+                        int dir = seg.getIntersectionOut().getDirection(seg,
                                 nextSegment);
 
-                        nextSegment.getVehicles().add(segmentVehicles.get(0));
+                        if (trafficLights[dir]) {
+                            // traffic light is GREEN
+                            configureVehicleParams(segmentVehicles.get(0),
+                                    nextSegment);
 
-                        segmentVehicles.remove(0);
+                            nextSegment.getVehicles().add(segmentVehicles.get(0));
+
+                            segmentVehicles.remove(0);
+                        }
                     }
                 }
-
-                // log vehicles
-//				for (int i = 0; i < segmentVehicles.size(); i++) {
-//					logger.info("VEHICLE " + i + " distance: "
-//							+ segmentVehicles.get(i).getCurrentDistance());
-//				}
             }
 
             k++;

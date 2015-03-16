@@ -1,7 +1,4 @@
-package com.utcn.bl;
-
-import com.utcn.models.Engine;
-import com.utcn.models.Vehicle;
+package com.utcn.models;
 
 public class StandardEngine implements Engine {
 

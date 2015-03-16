@@ -1,6 +1,6 @@
 package com.utcn.models;
 
-import javax.swing.JButton;
+import javax.swing.*;
 
 public class Intersection extends JButton {
 

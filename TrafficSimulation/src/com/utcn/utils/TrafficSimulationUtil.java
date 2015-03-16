@@ -2,7 +2,6 @@ package com.utcn.utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
 
@@ -73,6 +72,11 @@ public class TrafficSimulationUtil {
         return x * CONVERSION_UNIT;
     }
 
+    /**
+     * @param value
+     * @param places
+     * @return
+     */
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 

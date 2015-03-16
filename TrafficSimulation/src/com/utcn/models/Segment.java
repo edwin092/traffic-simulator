@@ -1,9 +1,9 @@
 package com.utcn.models;
 
+import com.utcn.utils.TrafficSimulationUtil;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.utcn.utils.TrafficSimulationUtil;
 
 public class Segment {
 

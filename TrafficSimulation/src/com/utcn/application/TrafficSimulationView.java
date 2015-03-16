@@ -1,5 +1,16 @@
 package com.utcn.application;
 
+import com.utcn.bl.EnvironmentSetup;
+import com.utcn.controllers.TrafficSimulationController;
+import com.utcn.models.Intersection;
+import com.utcn.models.Segment;
+import com.utcn.models.Vehicle;
+import com.utcn.utils.TrafficSimulationUtil;
+
+import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,29 +19,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingWorker;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
-import com.utcn.bl.EnvironmentSetup;
-import com.utcn.controllers.TrafficSimulationController;
-import com.utcn.models.Intersection;
-import com.utcn.models.Segment;
-import com.utcn.models.Vehicle;
-import com.utcn.utils.TrafficSimulationUtil;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TrafficSimulationView {
 
@@ -180,6 +169,8 @@ public class TrafficSimulationView {
 
         JTextPane textPaneLog = new JTextPane();
         textPaneLog.setEditable(false);
+        DefaultCaret caret = (DefaultCaret) textPaneLog.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         scrollPaneLog.setViewportView(textPaneLog);
 
         textPaneSimulationLog = textPaneLog.getStyledDocument();
@@ -300,7 +291,7 @@ public class TrafficSimulationView {
     /**
      * Start the simulation.
      */
-    public void simulate() {
+    public synchronized void simulate() {
         clearLogArea();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
@@ -311,7 +302,7 @@ public class TrafficSimulationView {
         environmentSetup = new EnvironmentSetup(segments, intersectionButtons,
                 false);
 
-        labels = new ArrayList<>();
+        labels = new CopyOnWriteArrayList<>();
 
         int globalCounter = 1;
         int vehDest = 0;

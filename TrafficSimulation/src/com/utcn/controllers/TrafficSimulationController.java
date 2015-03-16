@@ -1,19 +1,17 @@
 package com.utcn.controllers;
 
-import java.awt.Color;
+import com.utcn.application.TrafficSimulationView;
+import com.utcn.models.Intersection;
+import com.utcn.models.Segment;
+import com.utcn.utils.TrafficSimulationUtil;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
-
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-
-import com.utcn.application.TrafficSimulationView;
-import com.utcn.models.Intersection;
-import com.utcn.models.Segment;
-import com.utcn.utils.TrafficSimulationUtil;
 
 public class TrafficSimulationController {
 

@@ -2,6 +2,7 @@ package com.utcn.bl;
 
 import java.util.Random;
 
+import com.utcn.models.StandardEngine;
 import com.utcn.models.Vehicle;
 
 public class VehicleGenerator {
