@@ -25,10 +25,12 @@ public class TrafficSimulationView {
 
     // public static final int SEGMENT_LENGTH = 100;
     // public static final int SEGMENT_WIDTH = 40;
-    public static final int SIMULATION_TIME = 200;
+    public static final int SIMULATION_TIME_DEFAULT = 200;
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
     public static final int TRAFFIC_LIGHT_SIZE = 5;
+
+    public static final int SIMULATION_STEP_DEFAULT = 1;
 
     private JFrame frame;
     private EnvironmentSetup environmentSetup;
@@ -53,6 +55,8 @@ public class TrafficSimulationView {
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
 
     private List<JLabel> labels;
+
+    private int simulationStep = SIMULATION_STEP_DEFAULT;
 
 //    private BufferedImage image;
 
@@ -107,6 +111,8 @@ public class TrafficSimulationView {
                 SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                     @Override
                     public Void doInBackground() {
+                        // Request simulation step from user
+                        requestSimulationStep();
                         simulate();
                         return null;
                     }
@@ -307,6 +313,39 @@ public class TrafficSimulationView {
     }
 
     /**
+     * Requests the simulation step from the user.
+     */
+    private void requestSimulationStep() {
+        Object[] options = {"1X",
+                "5X",
+                "Just Results"};
+        int n = JOptionPane.showOptionDialog(frame,
+                "What simulation step would you like to have?",
+                "Simulation step",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[2]);
+
+        System.out.println("STEP: " + n);
+
+        switch (n) {
+            case 0:
+                simulationStep = 1;
+                break;
+            case 1:
+                simulationStep = 5;
+                break;
+            case 2:
+                simulationStep = SIMULATION_TIME_DEFAULT;
+                break;
+            default:
+                simulationStep = SIMULATION_STEP_DEFAULT;
+        }
+    }
+
+    /**
      * Start the simulation.
      */
     public synchronized void simulate() {
@@ -329,12 +368,16 @@ public class TrafficSimulationView {
                     "\n--------------------------------------\n");
             labels.clear();
 
-            // generate new vehicle
-            environmentSetup.generateVehicle();
-            // segment acceleration
-            environmentSetup.checkSegments(vehDest);
-            // manage intersections traffic lights
-            environmentSetup.manageIntersectionsTrafficLights();
+            System.out.println(simulationStep);
+
+            for (int i = 0; i < simulationStep; i++) {
+                // generate new vehicle
+                environmentSetup.generateVehicle();
+                // segment acceleration
+                environmentSetup.checkSegments(vehDest);
+                // manage intersections traffic lights
+                environmentSetup.manageIntersectionsTrafficLights();
+            }
 
             for (Segment segment : segments) {
 
@@ -383,13 +426,13 @@ public class TrafficSimulationView {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (globalCounter < SIMULATION_TIME);
+        } while (globalCounter < SIMULATION_TIME_DEFAULT);
 
         addNewLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
     }
 
     /**
-     *
+     * Adds traffic lights to the simulation panel.
      */
     private void addTrafficLightsToSimulation() {
         // Add traffic lights to intersections
@@ -705,5 +748,13 @@ public class TrafficSimulationView {
 
     public List<Integer> getCurrentSegmentYCoords() {
         return segmentCoordsY.get(currentSegment);
+    }
+
+    public int getSimulationStep() {
+        return simulationStep;
+    }
+
+    public void setSimulationStep(int simulationStep) {
+        this.simulationStep = simulationStep;
     }
 }
