@@ -10,7 +10,7 @@ public class TrafficSimulationUtil {
     /**
      *
      */
-    public static final double CONVERSION_UNIT = 0.5;
+    public static final double CONVERSION_UNIT = 2;
 
     // prevent this class from being instanced
     private TrafficSimulationUtil() {
@@ -33,16 +33,16 @@ public class TrafficSimulationUtil {
     }
 
     /**
-     * @param min
-     * @param max
-     * @return
+     * Returns a random int from given (min, max) interval.
+     *
+     * @param min min
+     * @param max max
+     * @return random int
      */
     public static int randInt(int min, int max) {
         Random rand = new Random();
 
-        int randomNum = rand.nextInt((max - min) + 1) + min;
-
-        return randomNum;
+        return rand.nextInt((max - min) + 1) + min;
     }
 
     /**
@@ -57,16 +57,20 @@ public class TrafficSimulationUtil {
     }
 
     /**
-     * @param x
-     * @return
+     * Converts meters to pixels.
+     *
+     * @param x value in meters
+     * @return value in pixels
      */
     public static double convertMetersToPixels(double x) {
         return x / CONVERSION_UNIT;
     }
 
     /**
-     * @param x
-     * @return
+     * Converts pixels in meters.
+     *
+     * @param x value in pixels
+     * @return value in meters
      */
     public static double convertPixelsToMeters(double x) {
         return x * CONVERSION_UNIT;

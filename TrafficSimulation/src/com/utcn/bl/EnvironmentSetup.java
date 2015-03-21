@@ -1,17 +1,17 @@
 package com.utcn.bl;
 
+import com.utcn.application.BriefFormatter;
+import com.utcn.models.Intersection;
+import com.utcn.models.Segment;
+import com.utcn.models.Vehicle;
+import com.utcn.utils.TrafficSimulationUtil;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-
-import com.utcn.application.BriefFormatter;
-import com.utcn.models.Intersection;
-import com.utcn.models.Segment;
-import com.utcn.models.Vehicle;
-import com.utcn.utils.TrafficSimulationUtil;
 
 public class EnvironmentSetup {
 
@@ -107,6 +107,10 @@ public class EnvironmentSetup {
         this.intersections = intersections;
     }
 
+    /**
+     *
+     * @return
+     */
     private int getRandomDestination() {
         int random = TrafficSimulationUtil.randInt(1, segments.size() - 1);
 
@@ -252,6 +256,63 @@ public class EnvironmentSetup {
         }
     }
 
+    public void manageIntersectionsTrafficLights() {
+        for (Intersection intersection : intersections) {
+            if (intersection.getPhaseCounter() == PHASE_TIME) {
+                // reset counter
+                intersection.setPhaseCounter(0);
+                // switch to next phase
+                intersection.nextPhase();
+
+                // check current phase
+                if (intersection.getCurrentPhase() == 1) {
+                    // PHASE 1
+                    intersection.setTrafficLightsSouth(new boolean[]{false,
+                            true, true});
+                    intersection.setTrafficLightsNorth(new boolean[]{false,
+                            true, true});
+                    intersection.setTrafficLightsEast(new boolean[]{false,
+                            false, false});
+                    intersection.setTrafficLightsVest(new boolean[]{false,
+                            false, false});
+                } else if (intersection.getCurrentPhase() == 2) {
+                    // PHASE 2
+                    intersection.setTrafficLightsSouth(new boolean[]{false,
+                            false, false});
+                    intersection.setTrafficLightsNorth(new boolean[]{false,
+                            false, false});
+                    intersection.setTrafficLightsEast(new boolean[]{false,
+                            true, true});
+                    intersection.setTrafficLightsVest(new boolean[]{false,
+                            true, true});
+                } else if (intersection.getCurrentPhase() == 3) {
+                    // PHASE 3
+                    intersection.setTrafficLightsSouth(new boolean[]{false,
+                            false, true});
+                    intersection.setTrafficLightsNorth(new boolean[]{false,
+                            false, true});
+                    intersection.setTrafficLightsEast(new boolean[]{true,
+                            false, false});
+                    intersection.setTrafficLightsVest(new boolean[]{true,
+                            false, false});
+                } else {
+                    // PHASE 4
+                    intersection.setTrafficLightsSouth(new boolean[]{true,
+                            false, false});
+                    intersection.setTrafficLightsNorth(new boolean[]{true,
+                            false, false});
+                    intersection.setTrafficLightsEast(new boolean[]{false,
+                            false, true});
+                    intersection.setTrafficLightsVest(new boolean[]{false,
+                            false, true});
+                }
+            } else {
+                intersection
+                        .setPhaseCounter(intersection.getPhaseCounter() + 1);
+            }
+        }
+    }
+
     /**
      * @param vehDest
      * @deprecated
@@ -333,63 +394,6 @@ public class EnvironmentSetup {
             }
 
             k++;
-        }
-    }
-
-    public void manageIntersectionsTrafficLights() {
-        for (Intersection intersection : intersections) {
-            if (intersection.getPhaseCounter() == PHASE_TIME) {
-                // reset counter
-                intersection.setPhaseCounter(0);
-                // switch to next phase
-                intersection.nextPhase();
-
-                // check current phase
-                if (intersection.getCurrentPhase() == 1) {
-                    // PHASE 1
-                    intersection.setTrafficLightsSouth(new boolean[]{false,
-                            true, true});
-                    intersection.setTrafficLightsNorth(new boolean[]{false,
-                            true, true});
-                    intersection.setTrafficLightsEast(new boolean[]{false,
-                            false, false});
-                    intersection.setTrafficLightsVest(new boolean[]{false,
-                            false, false});
-                } else if (intersection.getCurrentPhase() == 2) {
-                    // PHASE 2
-                    intersection.setTrafficLightsSouth(new boolean[]{false,
-                            false, false});
-                    intersection.setTrafficLightsNorth(new boolean[]{false,
-                            false, false});
-                    intersection.setTrafficLightsEast(new boolean[]{false,
-                            true, true});
-                    intersection.setTrafficLightsVest(new boolean[]{false,
-                            true, true});
-                } else if (intersection.getCurrentPhase() == 3) {
-                    // PHASE 3
-                    intersection.setTrafficLightsSouth(new boolean[]{false,
-                            false, true});
-                    intersection.setTrafficLightsNorth(new boolean[]{false,
-                            false, true});
-                    intersection.setTrafficLightsEast(new boolean[]{true,
-                            false, false});
-                    intersection.setTrafficLightsVest(new boolean[]{true,
-                            false, false});
-                } else {
-                    // PHASE 4
-                    intersection.setTrafficLightsSouth(new boolean[]{true,
-                            false, false});
-                    intersection.setTrafficLightsNorth(new boolean[]{true,
-                            false, false});
-                    intersection.setTrafficLightsEast(new boolean[]{false,
-                            false, true});
-                    intersection.setTrafficLightsVest(new boolean[]{false,
-                            false, true});
-                }
-            } else {
-                intersection
-                        .setPhaseCounter(intersection.getPhaseCounter() + 1);
-            }
         }
     }
 

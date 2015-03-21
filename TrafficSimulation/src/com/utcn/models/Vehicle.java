@@ -12,6 +12,7 @@ public class Vehicle {
 
     public static final double SIZE = 3;
 
+    private int id;
     private int currentSpeed;
     private Segment destination;
     private List<Segment> routeList;
@@ -103,6 +104,14 @@ public class Vehicle {
 
     public void setSize(double size) {
         this.size = size;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     /**

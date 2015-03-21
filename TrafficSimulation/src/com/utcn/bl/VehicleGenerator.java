@@ -1,15 +1,16 @@
 package com.utcn.bl;
 
-import java.util.Random;
-
 import com.utcn.models.StandardEngine;
 import com.utcn.models.Vehicle;
+
+import java.util.Random;
 
 public class VehicleGenerator {
 
     public static final int MIN = 2;
     public static final int MAX = 8;
 
+    private int currentId;
     private int counter;
 
     public VehicleGenerator() {
@@ -19,8 +20,9 @@ public class VehicleGenerator {
     public Vehicle generateNewVehicle() {
         Vehicle vehicle = new Vehicle();
 
+        incrementCurrentId();
         // setare
-        // TODO
+        vehicle.setId(currentId);
         vehicle.setEngine(new StandardEngine());
         vehicle.setSize(Vehicle.SIZE);
 
@@ -40,5 +42,9 @@ public class VehicleGenerator {
 
         counter--;
         return false;
+    }
+
+    private void incrementCurrentId() {
+        currentId++;
     }
 }

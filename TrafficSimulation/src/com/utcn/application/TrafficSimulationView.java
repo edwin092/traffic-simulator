@@ -23,14 +23,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TrafficSimulationView {
 
-    // public static final int SEGMENT_LENGTH = 100;
-    // public static final int SEGMENT_WIDTH = 40;
     public static final int SIMULATION_TIME_DEFAULT = 200;
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
     public static final int TRAFFIC_LIGHT_SIZE = 5;
-
     public static final int SIMULATION_STEP_DEFAULT = 1;
+    public static final int GRID_SIZE_METERS = 500;
 
     private JFrame frame;
     private EnvironmentSetup environmentSetup;
@@ -44,7 +42,6 @@ public class TrafficSimulationView {
     private JMenuItem startMenuItem;
 
     private int currentSegment = 1;
-
     private int currentSegId = 1;
     private int currentIntersId = 1;
 
@@ -212,13 +209,13 @@ public class TrafficSimulationView {
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
-
 //                g.drawImage(image, 0, 0, null);
 
 //                JLabel picLabel = new JLabel(new ImageIcon(image));
 //                picLabel.setBounds(5, 5, 10, 10);
 //                this.add(picLabel);
 
+                createGridForSimulation(g, this.getWidth(), this.getHeight());
                 addTrafficLightsToSimulation();
 
                 for (Intersection intersection : intersectionButtons) {
@@ -313,6 +310,32 @@ public class TrafficSimulationView {
     }
 
     /**
+     * Creates grid for the simulation panel.
+     *
+     * @param g           Graphics component
+     * @param panelWidth  the width of the panel
+     * @param panelHeight the height of the panel
+     */
+    private void createGridForSimulation(Graphics g, int panelWidth, int panelHeight) {
+        int gridSizeInPixels = (int) TrafficSimulationUtil.convertMetersToPixels(GRID_SIZE_METERS);
+
+        int x = (panelWidth / gridSizeInPixels);
+        int y = (panelHeight / gridSizeInPixels);
+
+        Color color = new Color(0, 0, 0, 0.2f);
+        g.setColor(color);
+
+        // draw x lines
+        for (int i = 1; i < x; i++) {
+            g.drawLine(i * gridSizeInPixels, 0, i * gridSizeInPixels, panelHeight);
+        }
+        // draw y lines
+        for (int i = 0; i < y; i++) {
+            g.drawLine(0, i * gridSizeInPixels, panelWidth, i * gridSizeInPixels);
+        }
+    }
+
+    /**
      * Requests the simulation step from the user.
      */
     private void requestSimulationStep() {
@@ -327,8 +350,6 @@ public class TrafficSimulationView {
                 null,
                 options,
                 options[2]);
-
-        System.out.println("STEP: " + n);
 
         switch (n) {
             case 0:
@@ -367,8 +388,6 @@ public class TrafficSimulationView {
             addNewLogEntry("\n--------------------------------------\nCounter: " + globalCounter +
                     "\n--------------------------------------\n");
             labels.clear();
-
-            System.out.println(simulationStep);
 
             for (int i = 0; i < simulationStep; i++) {
                 // generate new vehicle
