@@ -400,14 +400,14 @@ public class TrafficSimulationView {
 
             for (Segment segment : segments) {
 
-                addNewLogEntry("\nSegment " + segment.getId() + ":" + "\n");
+                addNewLogEntry("\nSegment " + segment.getId() + ":" + "\n" + "Size: " + segment.getSize() + "\n");
 
                 for (Vehicle veh : segment.getVehicles()) {
 
-                    addNewLogEntry("\nVehicle: \nCurrent distance: " + veh.getCurrentDistance() + "\nCurrent speed: "
+                    addNewLogEntry("\nVehicle " + veh.getId() + ": \nCurrent distance: " + veh.getCurrentDistance() + "\nCurrent speed: "
                             + veh.getSpeed() + "\nDistance to next obstacle: " + veh.getDistanceToObstacle() + "\n");
 
-                    JLabel lblO = new JLabel("O");
+                    JLabel lblO = new JLabel(String.valueOf(veh.getId()));
 
                     int[] lineCoordsX = veh.getCurrentSegment()
                             .getLineCoordsX();
