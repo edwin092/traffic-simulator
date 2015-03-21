@@ -217,6 +217,10 @@ public class EnvironmentSetup {
                             .getId()) {
                         // Destination reached
                         segmentVehicles.remove(0);
+                        if (!segmentVehicles.isEmpty()) {
+                            segmentVehicles.get(0).setDistanceToObstacle(segmentVehicles.get(0).getDistanceToObstacle() + Vehicle.SIZE);
+                        }
+
                     } else {
                         Segment nextSegment = getNextSegmentFromRoute(
                                 segmentVehicles.get(0), seg);
@@ -236,6 +240,9 @@ public class EnvironmentSetup {
                             nextSegment.getVehicles().add(segmentVehicles.get(0));
 
                             segmentVehicles.remove(0);
+                            if (!segmentVehicles.isEmpty()) {
+                                segmentVehicles.get(0).setDistanceToObstacle(segmentVehicles.get(0).getDistanceToObstacle() + Vehicle.SIZE);
+                            }
                         }
                     }
                 }
