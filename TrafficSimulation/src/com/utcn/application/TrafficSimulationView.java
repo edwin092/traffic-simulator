@@ -28,7 +28,7 @@ public class TrafficSimulationView {
     public static final int SIMULATION_TIME = 200;
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
-    public static final int TRAFFIC_LIGHT_SIZE = 15;
+    public static final int TRAFFIC_LIGHT_SIZE = 5;
 
     private JFrame frame;
     private EnvironmentSetup environmentSetup;
@@ -53,6 +53,8 @@ public class TrafficSimulationView {
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
 
     private List<JLabel> labels;
+
+//    private BufferedImage image;
 
     /**
      * Launch the application.
@@ -205,6 +207,26 @@ public class TrafficSimulationView {
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
 
+//                g.drawImage(image, 0, 0, null);
+
+//                JLabel picLabel = new JLabel(new ImageIcon(image));
+//                picLabel.setBounds(5, 5, 10, 10);
+//                this.add(picLabel);
+
+                addTrafficLightsToSimulation();
+
+                for (Intersection intersection : intersectionButtons) {
+                    this.add(intersection);
+//                    panelSimulation.setComponentZOrder(intersection, getComponentCount());
+                }
+
+                if (labels != null) {
+                    for (JLabel label : labels) {
+                        this.add(label);
+                        this.setComponentZOrder(label, 0);
+                    }
+                }
+
                 for (Integer key : segmentCoordsX.keySet()) {
                     List<Integer> xCoords = segmentCoordsX.get(key);
                     List<Integer> yCoords = segmentCoordsY.get(key);
@@ -214,20 +236,16 @@ public class TrafficSimulationView {
 
                     // draw polyline
                     g.drawPolyline(x, y, x.length);
-
-                    for (Intersection intersection : intersectionButtons) {
-                        panelSimulation.add(intersection);
-                    }
-
-                    if (labels != null) {
-                        for (JLabel lable : labels) {
-                            panelSimulation.add(lable);
-                            panelSimulation.setComponentZOrder(lable, 0);
-                        }
-                    }
                 }
             }
         };
+
+//        try {
+//            image = ImageIO.read(new File("C:\\Users\\edWin\\Desktop\\photo.jpg"));
+//        } catch (IOException ex) {
+//            // handle exception...
+//        }
+
 
         scrollPaneSimulation.setViewportView(panelSimulation);
         panelSimulation.setLayout(null);
@@ -247,8 +265,8 @@ public class TrafficSimulationView {
         List<Integer> yList = segmentCoordsY.get(currentSegment);
 
         if (xList == null) {
-            xList = new ArrayList<Integer>();
-            yList = new ArrayList<Integer>();
+            xList = new ArrayList<>();
+            yList = new ArrayList<>();
         }
 
         if (x == null && y == null) {
@@ -368,6 +386,169 @@ public class TrafficSimulationView {
         } while (globalCounter < SIMULATION_TIME);
 
         addNewLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
+    }
+
+    /**
+     *
+     */
+    private void addTrafficLightsToSimulation() {
+        // Add traffic lights to intersections
+        for (Intersection intersection : getIntersectionButtons()) {
+            // NORTH
+            // LEFT
+            JTextField trafficLightLeft = new JTextField();
+            trafficLightLeft.setBackground(intersection.getTrafficLightsNorth()[0] ? Color.GREEN : Color.RED);
+            trafficLightLeft.setEditable(false);
+            trafficLightLeft.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    intersection.getY(),
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLightLeft);
+            panelSimulation.setComponentZOrder(trafficLightLeft, 0);
+            // STRAIGHT
+            JTextField trafficLightStraight = new JTextField();
+            trafficLightStraight.setBackground(intersection.getTrafficLightsNorth()[1] ? Color.GREEN : Color.RED);
+            trafficLightStraight.setEditable(false);
+            trafficLightStraight.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                    intersection.getY(),
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLightStraight);
+            panelSimulation.setComponentZOrder(trafficLightStraight, 0);
+            // RIGHT
+            JTextField trafficLightRight = new JTextField();
+            trafficLightRight.setBackground(intersection.getTrafficLightsNorth()[2] ? Color.GREEN : Color.RED);
+            trafficLightRight.setEditable(false);
+            trafficLightRight.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    intersection.getY(),
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLightRight);
+            panelSimulation.setComponentZOrder(trafficLightRight, 0);
+
+            // SOUTH
+            // LEFT
+            JTextField trafficLight2Left = new JTextField();
+            trafficLight2Left.setBackground(intersection.getTrafficLightsSouth()[0] ? Color.GREEN : Color.RED);
+            trafficLight2Left.setEditable(false);
+            trafficLight2Left.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight2Left);
+            panelSimulation.setComponentZOrder(trafficLight2Left, 0);
+            // STRAIGHT
+            JTextField trafficLight2Straight = new JTextField();
+            trafficLight2Straight.setBackground(intersection.getTrafficLightsSouth()[1] ? Color.GREEN : Color.RED);
+            trafficLight2Straight.setEditable(false);
+            trafficLight2Straight.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight2Straight);
+            panelSimulation.setComponentZOrder(trafficLight2Straight, 0);
+            // RIGHT
+            JTextField trafficLight2Right = new JTextField();
+            trafficLight2Right.setBackground(intersection.getTrafficLightsSouth()[2] ? Color.GREEN : Color.RED);
+            trafficLight2Right.setEditable(false);
+            trafficLight2Right.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight2Right);
+            panelSimulation.setComponentZOrder(trafficLight2Right, 0);
+
+            // VEST
+            // LEFT
+            JTextField trafficLight3Left = new JTextField();
+            trafficLight3Left.setBackground(intersection.getTrafficLightsVest()[0] ? Color.GREEN : Color.RED);
+            trafficLight3Left.setEditable(false);
+            trafficLight3Left
+                    .setBounds(
+                            intersection.getX(),
+                            intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                            TRAFFIC_LIGHT_SIZE,
+                            TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight3Left);
+            panelSimulation.setComponentZOrder(trafficLight3Left, 0);
+            // STRAIGHT
+            JTextField trafficLight3Straight = new JTextField();
+            trafficLight3Straight.setBackground(intersection.getTrafficLightsVest()[1] ? Color.GREEN : Color.RED);
+            trafficLight3Straight.setEditable(false);
+            trafficLight3Straight
+                    .setBounds(
+                            intersection.getX(),
+                            intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                            TRAFFIC_LIGHT_SIZE,
+                            TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight3Straight);
+            panelSimulation.setComponentZOrder(trafficLight3Straight, 0);
+            // RIGHT
+            JTextField trafficLight3Right = new JTextField();
+            trafficLight3Right.setBackground(intersection.getTrafficLightsVest()[2] ? Color.GREEN : Color.RED);
+            trafficLight3Right.setEditable(false);
+            trafficLight3Right
+                    .setBounds(
+                            intersection.getX(),
+                            intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                            TRAFFIC_LIGHT_SIZE,
+                            TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight3Right);
+            panelSimulation.setComponentZOrder(trafficLight3Right, 0);
+
+            // EAST
+            // LEFT
+            JTextField trafficLight4Left = new JTextField();
+            trafficLight4Left.setBackground(intersection.getTrafficLightsEast()[0] ? Color.GREEN : Color.RED);
+            trafficLight4Left.setEditable(false);
+            trafficLight4Left.setBounds(
+                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE,
+                    intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight4Left);
+            panelSimulation.setComponentZOrder(trafficLight4Left, 0);
+            // STRAIGHT
+            JTextField trafficLight4Straight = new JTextField();
+            trafficLight4Straight.setBackground(intersection.getTrafficLightsEast()[1] ? Color.GREEN : Color.RED);
+            trafficLight4Straight.setEditable(false);
+            trafficLight4Straight.setBounds(
+                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE,
+                    intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight4Straight);
+            panelSimulation.setComponentZOrder(trafficLight4Straight, 0);
+            // RIGHT
+            JTextField trafficLight4Right = new JTextField();
+            trafficLight4Right.setBackground(intersection.getTrafficLightsEast()[2] ? Color.GREEN : Color.RED);
+            trafficLight4Right.setEditable(false);
+            trafficLight4Right.setBounds(
+                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE,
+                    intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+
+            panelSimulation.add(trafficLight4Right);
+            panelSimulation.setComponentZOrder(trafficLight4Right, 0);
+        }
     }
 
     public void addMouseClickListener(MouseListener mouseListener) {

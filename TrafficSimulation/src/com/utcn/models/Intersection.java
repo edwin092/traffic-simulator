@@ -16,10 +16,10 @@ public class Intersection extends JButton {
 
     // semafoare din intersectie: true-verde, false-rosu
     // 0 - left, 1 - straight, 2 - right
-    private boolean[] trafficLightsNorth;
-    private boolean[] trafficLightsSouth;
-    private boolean[] trafficLightsVest;
-    private boolean[] trafficLightsEast;
+    private boolean[] trafficLightsNorth = new boolean[]{false, true, true};
+    private boolean[] trafficLightsSouth = new boolean[]{false, true, true};
+    private boolean[] trafficLightsVest = new boolean[]{false, false, false};
+    private boolean[] trafficLightsEast = new boolean[]{false, false, false};
 
     /* phases */
     private int phases = 4; // 4 phases
