@@ -337,10 +337,6 @@ public class TrafficSimulationView {
                     int segSize = 0;
                     for (int i = 0; i < lineCoordsX.length - 1; i++) {
 
-                        if (veh.getPosY() == 0) {
-                            veh.setPosY(lineCoordsY[i]);
-                        }
-
                         segSize += TrafficSimulationUtil.distanceBetweenPoints(
                                 lineCoordsX[i], lineCoordsY[i],
                                 lineCoordsX[i + 1], lineCoordsY[i + 1]);

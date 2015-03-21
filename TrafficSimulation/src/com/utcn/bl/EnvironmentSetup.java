@@ -186,13 +186,15 @@ public class EnvironmentSetup {
                                     segmentVehicles.get(i + 1)
                                             .getDistanceToObstacle()
                                             - segmentVehicles.get(i)
-                                            .getDistanceToObstacle());
+                                            .getDistanceToObstacle() -
+                                            segmentVehicles.get(i).getSize());
                         } else {
                             segmentVehicles.get(i + 1).setDistanceToObstacle(
                                     segmentVehicles.get(i)
                                             .getCurrentDistance()
                                             - segmentVehicles.get(i + 1)
-                                            .getCurrentDistance());
+                                            .getCurrentDistance() -
+                                            segmentVehicles.get(i).getSize());
                         }
                     }
 
@@ -207,7 +209,8 @@ public class EnvironmentSetup {
 //                                    .getSpeed());
                 }
 
-                if (segmentVehicles.get(0).getDistanceToObstacle() == 0) {
+                if (segmentVehicles.get(0).getDistanceToObstacle() == 0 &&
+                        segmentVehicles.get(0).getCurrentDistance() == segmentVehicles.get(0).getCurrentSegment().getSize()) {
                     // first vehicle reached end of segment
 
                     if (segmentVehicles.get(0).getDestination().getId() == seg
@@ -419,6 +422,8 @@ public class EnvironmentSetup {
 
     /**
      * Start simulation
+     *
+     * @deprecated
      */
     public void simulate() {
 

@@ -5,7 +5,12 @@ import com.utcn.utils.TrafficSimulationUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class Vehicle {
+
+    public static final double SIZE = 3;
 
     private int currentSpeed;
     private Segment destination;
@@ -15,14 +20,11 @@ public class Vehicle {
     private double distanceToObstacle;
     private double speed;
     private Engine engine;
-
-    // current pos in pixels
-    private double posX;
-    private double posY;
-
+    // the size of the vehicle
+    private double size;
 
     public Vehicle() {
-        routeList = new ArrayList<Segment>();
+        routeList = new ArrayList<>();
     }
 
     /**
@@ -95,20 +97,12 @@ public class Vehicle {
         this.engine = engine;
     }
 
-    public double getPosX() {
-        return posX;
+    public double getSize() {
+        return size;
     }
 
-    public void setPosX(double posX) {
-        this.posX = posX;
-    }
-
-    public double getPosY() {
-        return posY;
-    }
-
-    public void setPosY(double posY) {
-        this.posY = posY;
+    public void setSize(double size) {
+        this.size = size;
     }
 
     /**

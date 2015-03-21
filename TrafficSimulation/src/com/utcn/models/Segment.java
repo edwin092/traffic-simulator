@@ -25,7 +25,7 @@ public class Segment {
     private int[] lineCoordsY;
 
     public Segment() {
-        vehicles = new ArrayList<Vehicle>();
+        vehicles = new ArrayList<>();
     }
 
     public int getId() {

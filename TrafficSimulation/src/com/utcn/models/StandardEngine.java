@@ -32,7 +32,7 @@ public class StandardEngine implements Engine {
             car.setSpeed(0);
             car.setDistanceToObstacle(0);
 
-            if (car.getCurrentSegment().getSize() - car.getCurrentDistance() <= 1) {
+            if (car.getCurrentSegment().getSize() - car.getCurrentDistance() <= Vehicle.SIZE + 1) {
                 car.setCurrentDistance(car.getCurrentSegment().getSize());
             }
         }

@@ -7,37 +7,38 @@ import com.utcn.models.Vehicle;
 
 public class VehicleGenerator {
 
-	public static final int MIN = 2;
-	public static final int MAX = 8;
+    public static final int MIN = 2;
+    public static final int MAX = 8;
 
-	private int counter;
+    private int counter;
 
-	public VehicleGenerator() {
-		generateNewRandomTime();
-	}
+    public VehicleGenerator() {
+        generateNewRandomTime();
+    }
 
-	public Vehicle generateNewVehicle() {
-		Vehicle vehicle = new Vehicle();
+    public Vehicle generateNewVehicle() {
+        Vehicle vehicle = new Vehicle();
 
-		// setare
-		// TODO
-		vehicle.setEngine(new StandardEngine());
+        // setare
+        // TODO
+        vehicle.setEngine(new StandardEngine());
+        vehicle.setSize(Vehicle.SIZE);
 
-		return vehicle;
-	}
+        return vehicle;
+    }
 
-	public void generateNewRandomTime() {
-		Random rand = new Random();
-		counter = rand.nextInt((MAX - MIN) + 1) + MIN;
-	}
+    public void generateNewRandomTime() {
+        Random rand = new Random();
+        counter = rand.nextInt((MAX - MIN) + 1) + MIN;
+    }
 
-	public boolean isCounterZero() {
-		if (counter == 0) {
-			generateNewRandomTime();
-			return true;
-		}
+    public boolean isCounterZero() {
+        if (counter == 0) {
+            generateNewRandomTime();
+            return true;
+        }
 
-		counter--;
-		return false;
-	}
+        counter--;
+        return false;
+    }
 }
