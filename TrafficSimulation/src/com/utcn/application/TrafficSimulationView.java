@@ -230,6 +230,9 @@ public class TrafficSimulationView {
                     }
                 }
 
+                Color lineColor = new Color(0, 0, 0, 1f);
+                g.setColor(lineColor);
+
                 for (Integer key : segmentCoordsX.keySet()) {
                     List<Integer> xCoords = segmentCoordsX.get(key);
                     List<Integer> yCoords = segmentCoordsY.get(key);
@@ -322,8 +325,8 @@ public class TrafficSimulationView {
         int x = (panelWidth / gridSizeInPixels);
         int y = (panelHeight / gridSizeInPixels);
 
-        Color color = new Color(0, 0, 0, 0.2f);
-        g.setColor(color);
+        Color gridColor = new Color(0, 0, 0, 0.2f);
+        g.setColor(gridColor);
 
         // draw x lines
         for (int i = 1; i < x; i++) {
