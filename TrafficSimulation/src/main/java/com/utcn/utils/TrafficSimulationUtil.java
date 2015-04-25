@@ -11,10 +11,8 @@ import java.util.Random;
 
 public class TrafficSimulationUtil {
 
-    /**
-     *
-     */
     public static final double CONVERSION_UNIT = 2;
+    public static final String EXPORT_FILE_NAME = "/simulation_env.json";
 
     // prevent this class from being instanced
     private TrafficSimulationUtil() {
@@ -141,10 +139,10 @@ public class TrafficSimulationUtil {
     /**
      * Export simulation environment to a JSON file.
      */
-    public static boolean exportToJSON(CustomImportExportClass customExportClasss) {
+    public static boolean exportToJSON(String folderpath, CustomImportExportClass customExportClasss) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(new File("myjson.json"), customExportClasss);
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(folderpath + EXPORT_FILE_NAME), customExportClasss);
         } catch (IOException e1) {
             e1.printStackTrace();
             return false;

@@ -9,9 +9,9 @@ public class ImportExportHelper {
     /**
      * Export simulation environment to a JSON file.
      */
-    public static boolean exportToJSON(TrafficSimulationView view) {
+    public static boolean exportToJSON(String folderpath, TrafficSimulationView view) {
 
-        return TrafficSimulationUtil.exportToJSON(convertToCustomImportExportClass(view));
+        return TrafficSimulationUtil.exportToJSON(folderpath, convertToCustomImportExportClass(view));
     }
 
     /**

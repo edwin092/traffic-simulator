@@ -10,6 +10,7 @@ import com.utcn.utils.TrafficSimulationUtil;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.StyledDocument;
@@ -17,6 +18,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -97,7 +99,14 @@ public class TrafficSimulationView {
         JMenuItem mntmToXml = new JMenuItem("Export to JSON");
         mntmToXml.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                boolean res = ImportExportHelper.exportToJSON(getTrafficSimulationViewInstance());
+                JFileChooser fc = new JFileChooser();
+                fc.setCurrentDirectory(new File("."));
+                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fc.setAcceptAllFileFilterUsed(false);
+                fc.showOpenDialog(null);
+
+                boolean res = ImportExportHelper.exportToJSON(fc.getSelectedFile().getPath(),
+                        getTrafficSimulationViewInstance());
 
                 if (!res) {
                     JOptionPane.showMessageDialog(frame,
@@ -112,8 +121,15 @@ public class TrafficSimulationView {
         JMenuItem mntmFromXml = new JMenuItem("Import from JSON");
         mntmFromXml.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                boolean res = ImportExportHelper.importFromJSON("myjson.json", getTrafficSimulationViewInstance());
+                JFileChooser fc = new JFileChooser();
+                FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter(
+                        "JSON files (*.json)", "json");
+                fc.setFileFilter(jsonFilter);
+                fc.setCurrentDirectory(new File("."));
+                fc.showOpenDialog(null);
 
+                boolean res = ImportExportHelper.importFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                        getTrafficSimulationViewInstance());
                 if (!res) {
                     JOptionPane.showMessageDialog(frame,
                             "Import failed.",
