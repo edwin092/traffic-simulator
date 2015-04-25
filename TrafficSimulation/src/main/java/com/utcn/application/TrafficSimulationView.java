@@ -101,18 +101,19 @@ public class TrafficSimulationView {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
                 fc.setCurrentDirectory(new File("."));
-                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 fc.setAcceptAllFileFilterUsed(false);
                 fc.showOpenDialog(null);
 
-                boolean res = ImportExportHelper.exportToJSON(fc.getSelectedFile().getPath(),
-                        getTrafficSimulationViewInstance());
+                if (fc.getSelectedFile() != null) {
+                    boolean res = ImportExportHelper.exportToJSON(fc.getSelectedFile().getPath(),
+                            getTrafficSimulationViewInstance());
 
-                if (!res) {
-                    JOptionPane.showMessageDialog(frame,
-                            "Export failed.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
+                    if (!res) {
+                        JOptionPane.showMessageDialog(frame,
+                                "Export failed.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
         });
@@ -128,16 +129,18 @@ public class TrafficSimulationView {
                 fc.setCurrentDirectory(new File("."));
                 fc.showOpenDialog(null);
 
-                boolean res = ImportExportHelper.importFromJSON(fc.getSelectedFile().getAbsolutePath(),
-                        getTrafficSimulationViewInstance());
-                if (!res) {
-                    JOptionPane.showMessageDialog(frame,
-                            "Import failed.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
+                if (fc.getSelectedFile() != null) {
+                    boolean res = ImportExportHelper.importFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                            getTrafficSimulationViewInstance());
+                    if (!res) {
+                        JOptionPane.showMessageDialog(frame,
+                                "Import failed.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
 
-                panelSimulation.repaint();
+                    panelSimulation.repaint();
+                }
             }
         });
         mnFile.add(mntmFromXml);
