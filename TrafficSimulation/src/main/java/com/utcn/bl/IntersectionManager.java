@@ -1,4 +1,4 @@
-//package com.utcn.bl;
+package utcn.bl;//package com.utcn.bl;
 //
 //public class IntersectionManager {
 //
