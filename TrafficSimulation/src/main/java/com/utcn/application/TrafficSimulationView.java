@@ -127,6 +127,11 @@ public class TrafficSimulationView {
         mnFile.add(mntmFromXml);
 
         JMenuItem mntmExit = new JMenuItem("Exit");
+        mntmExit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
         mnFile.add(mntmExit);
 
         JMenu mnSimulation = new JMenu("Simulation");
