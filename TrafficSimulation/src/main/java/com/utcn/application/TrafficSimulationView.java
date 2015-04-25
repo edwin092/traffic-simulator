@@ -483,7 +483,7 @@ public class TrafficSimulationView {
                             int[] newValues = TrafficSimulationUtil.getVehiclePosition(
                                     lineCoordsX[i], lineCoordsY[i], lineCoordsX[i + 1], lineCoordsY[i + 1], currentDistInPixels);
 
-                            lblO.setBounds(newValues[0], newValues[1], 10, 10);
+                            lblO.setBounds(newValues[0], newValues[1], 15, 10);
 
                             vehicleLabels.add(lblO);
 
