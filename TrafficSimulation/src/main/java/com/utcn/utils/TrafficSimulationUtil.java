@@ -1,5 +1,9 @@
 package com.utcn.utils;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -134,4 +138,35 @@ public class TrafficSimulationUtil {
         return new int[]{xN, yN};
     }
 
+    /**
+     * Export simulation environment to a JSON file.
+     */
+    public static boolean exportToJSON(CustomImportExportClass customExportClasss) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new File("myjson.json"), customExportClasss);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Import an already existing simulation environment.
+     */
+    public static CustomImportExportClass importFromJSON(String filepath) {
+        ObjectMapper mapper = new ObjectMapper();
+        CustomImportExportClass customImportExportClass;
+
+        try {
+            customImportExportClass = mapper.readValue(new File(filepath), CustomImportExportClass.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return customImportExportClass;
+    }
 }

@@ -5,7 +5,9 @@ import com.utcn.controllers.TrafficSimulationController;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
+import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.TrafficSimulationUtil;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -29,6 +31,7 @@ public class TrafficSimulationView {
     public static final int TRAFFIC_LIGHT_SIZE = 5;
     public static final int SIMULATION_STEP_DEFAULT = 1;
     public static final int GRID_SIZE_METERS = 500;
+    private int simulationStep = SIMULATION_STEP_DEFAULT;
 
     private JFrame frame;
     private EnvironmentSetup environmentSetup;
@@ -50,10 +53,9 @@ public class TrafficSimulationView {
 
     private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
-
-    private List<JLabel> labels;
-
-    private int simulationStep = SIMULATION_STEP_DEFAULT;
+//
+//    @JsonIgnore
+//    private List<JLabel> labels;
 
 //    private BufferedImage image;
 
@@ -92,6 +94,38 @@ public class TrafficSimulationView {
         JMenu mnFile = new JMenu("File");
         menuBar.add(mnFile);
 
+        JMenuItem mntmToXml = new JMenuItem("Export to JSON");
+        mntmToXml.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean res = ImportExportHelper.exportToJSON(getTrafficSimulationViewInstance());
+
+                if (!res) {
+                    JOptionPane.showMessageDialog(frame,
+                            "Export failed.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        mnFile.add(mntmToXml);
+
+        JMenuItem mntmFromXml = new JMenuItem("Import from JSON");
+        mntmFromXml.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean res = ImportExportHelper.importFromJSON("myjson.json", getTrafficSimulationViewInstance());
+
+                if (!res) {
+                    JOptionPane.showMessageDialog(frame,
+                            "Import failed.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+
+                panelSimulation.repaint();
+            }
+        });
+        mnFile.add(mntmFromXml);
+
         JMenuItem mntmExit = new JMenuItem("Exit");
         mnFile.add(mntmExit);
 
@@ -123,6 +157,16 @@ public class TrafficSimulationView {
         JMenu mnComponents = new JMenu("Components");
         menuBar.add(mnComponents);
 
+        JMenuItem mntmClear = new JMenuItem("Clear all");
+        mntmClear.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                clearComponents();
+
+                panelSimulation.repaint();
+            }
+        });
+        mnComponents.add(mntmClear);
+
         JMenuItem mntmSegment = new JMenuItem("Segment");
         mntmSegment.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -141,18 +185,6 @@ public class TrafficSimulationView {
             }
         });
         mnComponents.add(mntmIntersection);
-
-        JMenu mnImport = new JMenu("Import");
-        menuBar.add(mnImport);
-
-        JMenuItem mntmFromXml = new JMenuItem("From XML");
-        mntmFromXml.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // TODO
-                // ADD XML import here
-            }
-        });
-        mnImport.add(mntmFromXml);
 
         JSplitPane splitPane = new JSplitPane();
         splitPane.setBounds(10, 11, 1301, 721);
@@ -223,8 +255,8 @@ public class TrafficSimulationView {
 //                    panelSimulation.setComponentZOrder(intersection, getComponentCount());
                 }
 
-                if (labels != null) {
-                    for (JLabel label : labels) {
+                if (vehicleLabels != null) {
+                    for (JLabel label : vehicleLabels) {
                         this.add(label);
                         this.setComponentZOrder(label, 0);
                     }
@@ -383,14 +415,14 @@ public class TrafficSimulationView {
         environmentSetup = new EnvironmentSetup(segments, intersectionButtons,
                 false);
 
-        labels = new CopyOnWriteArrayList<>();
+        vehicleLabels = new CopyOnWriteArrayList<>();
 
         int globalCounter = 1;
         int vehDest = 0;
         do {
             addNewLogEntry("\n--------------------------------------\nCounter: " + globalCounter +
                     "\n--------------------------------------\n");
-            labels.clear();
+            vehicleLabels.clear();
 
             for (int i = 0; i < simulationStep; i++) {
                 // generate new vehicle
@@ -432,7 +464,7 @@ public class TrafficSimulationView {
 
                             lblO.setBounds(newValues[0], newValues[1], 10, 10);
 
-                            labels.add(lblO);
+                            vehicleLabels.add(lblO);
 
                             panelSimulation.removeAll();
                             panelSimulation.revalidate();
@@ -616,6 +648,26 @@ public class TrafficSimulationView {
         }
     }
 
+    /**
+     *
+     */
+    public void clearComponents() {
+        vehicleLabels = null;
+        currentSegment = 1;
+        currentSegId = 1;
+        currentIntersId = 1;
+
+        panelSimulation.removeAll();
+        panelSimulation.revalidate();
+
+        intersectionButtons = new ArrayList<>();
+        segments = new ArrayList<>();
+
+        segmentCoordsX = new HashMap<>();
+        segmentCoordsY = new HashMap<>();
+    }
+
+
     public void addMouseClickListener(MouseListener mouseListener) {
         panelSimulation.addMouseListener(mouseListener);
     }
@@ -778,5 +830,10 @@ public class TrafficSimulationView {
 
     public void setSimulationStep(int simulationStep) {
         this.simulationStep = simulationStep;
+    }
+
+    @JsonIgnore
+    public TrafficSimulationView getTrafficSimulationViewInstance() {
+        return this;
     }
 }
