@@ -4,11 +4,15 @@ import com.utcn.application.BriefFormatter;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
+import com.utcn.utils.BreadthFirstSearch;
+import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -42,15 +46,13 @@ public class EnvironmentSetup {
             BriefFormatter formatter = new BriefFormatter();
             fh.setFormatter(formatter);
             logger.setUseParentHandlers(false);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (SecurityException | IOException e) {
             e.printStackTrace();
         }
 
         vehicleGenerator = new VehicleGenerator();
-        this.segments = new ArrayList<Segment>();
-        this.intersections = new ArrayList<Intersection>();
+        this.segments = new ArrayList<>();
+        this.intersections = new ArrayList<>();
 
         Segment seg1 = new Segment();
         Segment seg2 = new Segment();
@@ -85,9 +87,7 @@ public class EnvironmentSetup {
                 BriefFormatter formatter = new BriefFormatter();
                 fh.setFormatter(formatter);
                 logger.setUseParentHandlers(false);
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (SecurityException | IOException e) {
                 e.printStackTrace();
             }
         } else {
@@ -108,11 +108,10 @@ public class EnvironmentSetup {
     }
 
     /**
-     *
      * @return
      */
-    private int getRandomDestination() {
-        int random = TrafficSimulationUtil.randInt(1, segments.size() - 1);
+    private int getRandomIntersectionId() {
+        int random = TrafficSimulationUtil.randInt(1, intersections.size() - 1);
 
         // TODO
         // check if dest is reachable
@@ -124,19 +123,48 @@ public class EnvironmentSetup {
     /**
      *
      */
-    public void generateVehicle() {
+    public void generateVehicle(SimulationGraph simulationGraph) {
         if (vehicleGenerator.isCounterZero()) {
 
             logger.info("New Vehicle generated!");
 
             Vehicle newVehicle = vehicleGenerator.generateNewVehicle();
 
-            configureVehicleParams(newVehicle, segments.get(0));
-            newVehicle.setDestination(segments.get(getRandomDestination()));
-            newVehicle.setRouteList(segments);
+            List<Integer> solution = null;
+            do {
+                int startId = getRandomIntersectionId();
+                int endId;
+                do {
+                    endId = getRandomIntersectionId();
+                } while (startId == endId);
 
-            // set current vehicle at starting point
-            segments.get(0).getVehicles().add(newVehicle);
+                LinkedList<Integer> visited = new LinkedList<>();
+                visited.add(startId);
+                Map<Integer, List<Integer>> solutions = BreadthFirstSearch.breadthFirst(simulationGraph, visited, endId);
+
+                for (int i = 1; i <= solutions.size(); i++) {
+                    if (solutions.get(i).size() > 2) {
+                        solution = solutions.get(i);
+                    }
+                }
+            } while (solution == null);
+
+
+            List<Segment> routeList = new ArrayList<>();
+            for (int i = 0; i < solution.size() - 1; i++) {
+                for (Segment segment : segments) {
+                    if (segment.getIntersectionIn().getId() == solution.get(i) &&
+                            segment.getIntersectionOut().getId() == solution.get(i + 1)) {
+                        routeList.add(segment);
+                        break;
+                    }
+                }
+            }
+
+            configureVehicleParams(newVehicle, routeList.get(0));
+            newVehicle.setDestination(routeList.get(routeList.size() - 1));
+            newVehicle.setRouteList(routeList);
+            routeList.get(0).getVehicles().add(newVehicle);
         }
     }
 
@@ -256,6 +284,9 @@ public class EnvironmentSetup {
         }
     }
 
+    /**
+     *
+     */
     public void manageIntersectionsTrafficLights() {
         for (Intersection intersection : intersections) {
             if (intersection.getPhaseCounter() == PHASE_TIME) {
@@ -553,7 +584,7 @@ public class EnvironmentSetup {
                 k++;
             }
 
-            // verificare intersectii
+            // check intersections
             for (Intersection intersection : intersections) {
 
                 logger.info("\nTRAFFIC LIGHT: "
@@ -588,7 +619,6 @@ public class EnvironmentSetup {
             try {
                 Thread.sleep(300);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 

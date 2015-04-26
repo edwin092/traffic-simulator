@@ -6,8 +6,8 @@ import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
 import com.utcn.utils.ImportExportHelper;
+import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -443,6 +443,9 @@ public class TrafficSimulationView {
 
         int globalCounter = 1;
         int vehDest = 0;
+
+        SimulationGraph simulationGraph = TrafficSimulationUtil.convertSimulaionEnvironmentToGraph(getTrafficSimulationViewInstance());
+
         do {
             addNewLogEntry("\n--------------------------------------\nCounter: " + globalCounter +
                     "\n--------------------------------------\n");
@@ -450,7 +453,7 @@ public class TrafficSimulationView {
 
             for (int i = 0; i < simulationStep; i++) {
                 // generate new vehicle
-                environmentSetup.generateVehicle();
+                environmentSetup.generateVehicle(simulationGraph);
                 // segment acceleration
                 environmentSetup.checkSegments(vehDest);
                 // manage intersections traffic lights
@@ -856,7 +859,6 @@ public class TrafficSimulationView {
         this.simulationStep = simulationStep;
     }
 
-    @JsonIgnore
     public TrafficSimulationView getTrafficSimulationViewInstance() {
         return this;
     }

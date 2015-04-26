@@ -1,5 +1,7 @@
 package com.utcn.utils;
 
+import com.utcn.application.TrafficSimulationView;
+import com.utcn.models.Intersection;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
@@ -168,5 +170,30 @@ public class TrafficSimulationUtil {
         }
 
         return customImportExportClass;
+    }
+
+    /**
+     * @param view
+     * @return
+     */
+    public static SimulationGraph convertSimulaionEnvironmentToGraph(TrafficSimulationView view) {
+        SimulationGraph simulationGraph = new SimulationGraph();
+
+        for (Intersection intersection : view.getIntersectionButtons()) {
+            if (intersection.getSegmentNorthOut() != null) {
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentNorthOut().getIntersectionOut().getId());
+            }
+            if (intersection.getSegmentSouthOut() != null) {
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentSouthOut().getIntersectionOut().getId());
+            }
+            if (intersection.getSegmentEastOut() != null) {
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentEastOut().getIntersectionOut().getId());
+            }
+            if (intersection.getSegmentVestOut() != null) {
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentVestOut().getIntersectionOut().getId());
+            }
+        }
+
+        return simulationGraph;
     }
 }
