@@ -1,7 +1,8 @@
 package com.utcn.utils;
 
-import com.utcn.application.TrafficSimulationView;
+import com.utcn.flow.TrafficFlow;
 import com.utcn.models.Intersection;
+import com.utcn.view.TrafficSimulationView;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
@@ -140,7 +141,7 @@ public class TrafficSimulationUtil {
     /**
      * Export simulation environment to a JSON file.
      */
-    public static boolean exportToJSON(String filepath, CustomImportExportClass customExportClasss) {
+    public static boolean exportEnvironmentToJSON(String filepath, CustomImportExportClass customExportClasss) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             if (!filepath.contains(".json")) {
@@ -158,7 +159,7 @@ public class TrafficSimulationUtil {
     /**
      * Import an already existing simulation environment.
      */
-    public static CustomImportExportClass importFromJSON(String filepath) {
+    public static CustomImportExportClass importEnvironmentFromJSON(String filepath) {
         ObjectMapper mapper = new ObjectMapper();
         CustomImportExportClass customImportExportClass;
 
@@ -170,6 +171,24 @@ public class TrafficSimulationUtil {
         }
 
         return customImportExportClass;
+    }
+
+    /**
+     * Import flow.
+     */
+    public static List<TrafficFlow> importFlowFromJSON(String filepath) {
+        ObjectMapper mapper = new ObjectMapper();
+        List<TrafficFlow> trafficFlows;
+
+        try {
+            trafficFlows = mapper.readValue(new File(filepath),
+                    mapper.getTypeFactory().constructCollectionType(List.class, TrafficFlow.class));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return trafficFlows;
     }
 
     /**
@@ -195,5 +214,39 @@ public class TrafficSimulationUtil {
         }
 
         return simulationGraph;
+    }
+
+    /**
+     * Manage intersection traffic lights depending on current phase.
+     *
+     * @param intersection current intersection.
+     */
+    public static void initIntersectionTrafficLights(Intersection intersection) {
+        // check current phase
+        if (intersection.getCurrentPhase() == 1) {
+            // PHASE 1
+            intersection.setTrafficLightsSouth(new boolean[]{false, true, true});
+            intersection.setTrafficLightsNorth(new boolean[]{false, true, true});
+            intersection.setTrafficLightsEast(new boolean[]{false, false, false});
+            intersection.setTrafficLightsVest(new boolean[]{false, false, false});
+        } else if (intersection.getCurrentPhase() == 2) {
+            // PHASE 2
+            intersection.setTrafficLightsSouth(new boolean[]{false, false, false});
+            intersection.setTrafficLightsNorth(new boolean[]{false, false, false});
+            intersection.setTrafficLightsEast(new boolean[]{false, true, true});
+            intersection.setTrafficLightsVest(new boolean[]{false, true, true});
+        } else if (intersection.getCurrentPhase() == 3) {
+            // PHASE 3
+            intersection.setTrafficLightsSouth(new boolean[]{false, false, true});
+            intersection.setTrafficLightsNorth(new boolean[]{false, false, true});
+            intersection.setTrafficLightsEast(new boolean[]{true, false, false});
+            intersection.setTrafficLightsVest(new boolean[]{true, false, false});
+        } else {
+            // PHASE 4
+            intersection.setTrafficLightsSouth(new boolean[]{true, false, false});
+            intersection.setTrafficLightsNorth(new boolean[]{true, false, false});
+            intersection.setTrafficLightsEast(new boolean[]{false, false, true});
+            intersection.setTrafficLightsVest(new boolean[]{false, false, true});
+        }
     }
 }

@@ -1,10 +1,12 @@
-package com.utcn.application;
+package com.utcn.view;
 
 import com.utcn.bl.EnvironmentSetup;
 import com.utcn.controllers.TrafficSimulationController;
+import com.utcn.flow.TrafficFlow;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
+import com.utcn.optimization.TrafficLightsOptimization;
 import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
@@ -12,7 +14,6 @@ import com.utcn.utils.TrafficSimulationUtil;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -27,13 +28,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TrafficSimulationView {
 
-    public static final int SIMULATION_TIME_DEFAULT = 200;
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
     public static final int TRAFFIC_LIGHT_SIZE = 5;
     public static final int SIMULATION_STEP_DEFAULT = 1;
+    public static final int SIMULATION_TIME_DEFAULT = 200;
     public static final int GRID_SIZE_METERS = 500;
+
     private int simulationStep = SIMULATION_STEP_DEFAULT;
+    private int simulationTime = SIMULATION_TIME_DEFAULT;
 
     private JFrame frame;
     private EnvironmentSetup environmentSetup;
@@ -43,8 +46,12 @@ public class TrafficSimulationView {
     private boolean isIntersectionSelected;
     private boolean isSegmentSelected;
     private JPanel panelSimulation;
-    private StyledDocument textPaneSimulationLog;
+    private static StyledDocument textPaneSimulationLog;
+    private static StyledDocument textPaneStatisticsLog;
     private JMenuItem startMenuItem;
+    private JLabel lblCounter;
+    private JLabel lblStep;
+    private JLabel lblSimulationTime;
 
     private int currentSegment = 1;
     private int currentSegId = 1;
@@ -55,6 +62,8 @@ public class TrafficSimulationView {
 
     private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
+
+    private List<TrafficFlow> trafficFlows;
 //
 //    @JsonIgnore
 //    private List<JLabel> labels;
@@ -87,7 +96,8 @@ public class TrafficSimulationView {
      */
     private void initialize() {
         frame = new JFrame();
-        frame.setBounds(100, 100, 1337, 803);
+        frame.setBounds(100, 100, 1337, 815);
+        frame.setTitle("Traffic Simulation");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JMenuBar menuBar = new JMenuBar();
@@ -105,7 +115,7 @@ public class TrafficSimulationView {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = ImportExportHelper.exportToJSON(fc.getSelectedFile().getPath(),
+                    boolean res = ImportExportHelper.exportEnvironmentToJSON(fc.getSelectedFile().getPath(),
                             getTrafficSimulationViewInstance());
 
                     if (!res) {
@@ -130,7 +140,7 @@ public class TrafficSimulationView {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = ImportExportHelper.importFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                    boolean res = ImportExportHelper.importEnvironmentFromJSON(fc.getSelectedFile().getAbsolutePath(),
                             getTrafficSimulationViewInstance());
                     if (!res) {
                         JOptionPane.showMessageDialog(frame,
@@ -156,8 +166,40 @@ public class TrafficSimulationView {
         JMenu mnSimulation = new JMenu("Simulation");
         menuBar.add(mnSimulation);
 
-        JMenuItem mntmNewSimulation = new JMenuItem("New Simulation");
-        mnSimulation.add(mntmNewSimulation);
+        JMenuItem generateConfigMenuItem = new JMenuItem("Generate config file");
+        generateConfigMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new TrafficFlowGeneratorView(currentIntersId - 1).setVisible(true);
+            }
+        });
+        mnSimulation.add(generateConfigMenuItem);
+
+        JMenuItem addConfigMenuItem = new JMenuItem("Add config file");
+        addConfigMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fc = new JFileChooser();
+                FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter(
+                        "JSON files (*.json)", "json");
+                fc.setFileFilter(jsonFilter);
+                fc.setCurrentDirectory(new File("."));
+                fc.showOpenDialog(null);
+
+                if (fc.getSelectedFile() != null) {
+                    boolean res = ImportExportHelper.importFlowFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                            getTrafficSimulationViewInstance());
+                    if (res) {
+                        JOptionPane.showMessageDialog(frame,
+                                "Import succeeded.");
+                    } else {
+                        JOptionPane.showMessageDialog(frame,
+                                "Import failed.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+        mnSimulation.add(addConfigMenuItem);
 
         startMenuItem = new JMenuItem("Start");
         startMenuItem.addActionListener(new ActionListener() {
@@ -166,9 +208,16 @@ public class TrafficSimulationView {
                 SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                     @Override
                     public Void doInBackground() {
+                        // Request simulation time from user
+                        requestSimulationTime();
                         // Request simulation step from user
                         requestSimulationStep();
+                        // update labels
+                        lblSimulationTime.setText(String.valueOf(simulationTime));
+                        lblStep.setText(String.valueOf(simulationStep));
+                        // Start the simulation
                         simulate();
+
                         return null;
                     }
                 };
@@ -210,8 +259,22 @@ public class TrafficSimulationView {
         });
         mnComponents.add(mntmIntersection);
 
+        // Help Menu
+        JMenu mnHelp = new JMenu("Help");
+        menuBar.add(mnHelp);
+
+        JMenuItem mntmAbout = new JMenuItem("About");
+        mntmAbout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "Bogdan + Edwin = Bogwin");
+            }
+        });
+        mnHelp.add(mntmAbout);
+        // End Help Menu
+
         JSplitPane splitPane = new JSplitPane();
-        splitPane.setBounds(10, 11, 1301, 721);
+        splitPane.setBounds(10, 33, 1301, 710);
         splitPane.setDividerLocation(800);
         frame.getContentPane().add(splitPane);
 
@@ -220,6 +283,7 @@ public class TrafficSimulationView {
         splitPane.setRightComponent(splitPane_1);
         splitPane_1.setDividerLocation(350);
 
+        // Simulation Log Panel
         JScrollPane scrollPaneLog = new JScrollPane();
         scrollPaneLog
                 .setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -230,18 +294,15 @@ public class TrafficSimulationView {
 
         JTextPane textPaneLog = new JTextPane();
         textPaneLog.setEditable(false);
-        DefaultCaret caret = (DefaultCaret) textPaneLog.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+//        DefaultCaret caret = (DefaultCaret) textPaneLog.getCaret();
+//        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         scrollPaneLog.setViewportView(textPaneLog);
 
         textPaneSimulationLog = textPaneLog.getStyledDocument();
+        addNewSimulationLogEntry("Simulation Log");
+        // End Simulation Log Panel
 
-        try {
-            textPaneSimulationLog.insertString(textPaneSimulationLog.getLength(), "Simulation Log", null);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
-
+        // Statistics Panel
         JScrollPane scrollPaneStatistics = new JScrollPane();
         scrollPaneStatistics
                 .setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -249,11 +310,20 @@ public class TrafficSimulationView {
                 .setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         splitPane_1.setRightComponent(scrollPaneStatistics);
 
-        JPanel panelStatistics = new JPanel();
-        scrollPaneStatistics.setViewportView(panelStatistics);
-        panelStatistics.setLayout(null);
-        panelStatistics.setPreferredSize(new Dimension(500, 500));
+        JTextPane textPaneLogStatistics = new JTextPane();
+        textPaneLogStatistics.setEditable(false);
+        scrollPaneStatistics.setViewportView(textPaneLogStatistics);
 
+        textPaneStatisticsLog = textPaneLogStatistics.getStyledDocument();
+
+        try {
+            textPaneStatisticsLog.insertString(textPaneStatisticsLog.getLength(), "Statistics", null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        // End Statistics Panel
+
+        // Simulation Panel
         JScrollPane scrollPaneSimulation = new JScrollPane();
         scrollPaneSimulation
                 .setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -275,8 +345,19 @@ public class TrafficSimulationView {
                 addTrafficLightsToSimulation();
 
                 for (Intersection intersection : intersectionButtons) {
+
                     this.add(intersection);
-//                    panelSimulation.setComponentZOrder(intersection, getComponentCount());
+
+                    JLabel lab = new JLabel(String.valueOf(intersection.getId()));
+
+                    int labX = intersection.getX() + INTERSECTION_SIZE / 2 - 7;
+                    int labY = intersection.getY() + INTERSECTION_SIZE / 2 - 7;
+
+                    lab.setBounds(labX, labY, 15, 15);
+                    panelSimulation.add(lab);
+                    panelSimulation.setComponentZOrder(lab, 0);
+
+//                    panelSimulation.setComponentZOrder(lab, 1);
                 }
 
                 if (vehicleLabels != null) {
@@ -314,6 +395,39 @@ public class TrafficSimulationView {
         panelSimulation.setPreferredSize(new Dimension(1500, 1500));
 
         frame.getContentPane().setLayout(null);
+
+        JLabel lblCounterText = new JLabel("Counter:");
+        lblCounterText.setFont(new Font("Tahoma", Font.BOLD, 13));
+        lblCounterText.setBounds(10, 4, 60, 22);
+        frame.getContentPane().add(lblCounterText);
+
+        lblCounter = new JLabel("0");
+        lblCounter.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblCounter.setForeground(Color.RED);
+        lblCounter.setBounds(70, 4, 46, 22);
+        frame.getContentPane().add(lblCounter);
+
+        JLabel lblSimulationTimeText = new JLabel("Simulation Time:");
+        lblSimulationTimeText.setFont(new Font("Tahoma", Font.BOLD, 11));
+        lblSimulationTimeText.setBounds(120, 9, 118, 14);
+        frame.getContentPane().add(lblSimulationTimeText);
+
+        lblSimulationTime = new JLabel("0");
+        lblSimulationTime.setForeground(Color.BLUE);
+        lblSimulationTime.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblSimulationTime.setBounds(220, 4, 46, 22);
+        frame.getContentPane().add(lblSimulationTime);
+
+        JLabel lblStepText = new JLabel("Step:");
+        lblStepText.setFont(new Font("Tahoma", Font.BOLD, 11));
+        lblStepText.setBounds(260, 9, 53, 14);
+        frame.getContentPane().add(lblStepText);
+
+        lblStep = new JLabel("0");
+        lblStep.setForeground(Color.BLUE);
+        lblStep.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblStep.setBounds(295, 4, 46, 22);
+        frame.getContentPane().add(lblStep);
     }
 
     /**
@@ -344,11 +458,11 @@ public class TrafficSimulationView {
     }
 
     /**
-     * Adds a new log entry in the logging area.
+     * Adds a new log entry in the simulation logging area.
      *
      * @param text the text to be added
      */
-    public void addNewLogEntry(String text) {
+    public static void addNewSimulationLogEntry(String text) {
         try {
             textPaneSimulationLog.insertString(textPaneSimulationLog.getLength(), text, null);
         } catch (BadLocationException e) {
@@ -357,12 +471,37 @@ public class TrafficSimulationView {
     }
 
     /**
-     * Clears the logging area.
+     * Clears the simulation logging area.
      */
-    public void clearLogArea() {
+    public void clearSimulationLogArea() {
         try {
             textPaneSimulationLog.remove(0, textPaneSimulationLog.getLength());
-            addNewLogEntry("Simulation Log");
+            addNewSimulationLogEntry("Simulation Log");
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds a new log entry in the statistics area.
+     *
+     * @param text the text to be added
+     */
+    public static void addNewStatisticsLogEntry(String text) {
+        try {
+            textPaneStatisticsLog.insertString(textPaneStatisticsLog.getLength(), text, null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Clears the statistics area.
+     */
+    public void clearStatisticsArea() {
+        try {
+            textPaneStatisticsLog.remove(0, textPaneStatisticsLog.getLength());
+            addNewSimulationLogEntry("Statistics");
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
@@ -392,6 +531,22 @@ public class TrafficSimulationView {
         for (int i = 0; i < y; i++) {
             g.drawLine(0, i * gridSizeInPixels, panelWidth, i * gridSizeInPixels);
         }
+    }
+
+    /**
+     * Requests the simulation time from the user.
+     */
+    private void requestSimulationTime() {
+        simulationTime = 0;
+        do {
+            String result = JOptionPane.showInputDialog(frame, "Enter simulation time:");
+
+            try {
+                simulationTime = Integer.parseInt(result);
+            } catch (NumberFormatException ignored) {
+                // ignored exception
+            }
+        } while (simulationTime == 0);
     }
 
     /**
@@ -425,15 +580,29 @@ public class TrafficSimulationView {
         }
     }
 
+    private void setPhaseTimeAndOrderForIntersections() {
+        for (Intersection intersection : intersectionButtons) {
+            intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
+            intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
+
+            TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
+        }
+    }
+
     /**
      * Start the simulation.
      */
     public synchronized void simulate() {
-        clearLogArea();
+        clearSimulationLogArea();
+        clearStatisticsArea();
+
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
 
-        addNewLogEntry("\nSimulation started at " + dateFormat.format(date) + "\n\n");
+        addNewSimulationLogEntry("\nSimulation started at " + dateFormat.format(date) + "\n");
+
+        // set phase time and order for intersections
+        setPhaseTimeAndOrderForIntersections();
 
         // creates a new environment
         environmentSetup = new EnvironmentSetup(segments, intersectionButtons,
@@ -444,16 +613,22 @@ public class TrafficSimulationView {
         int globalCounter = 1;
         int vehDest = 0;
 
-        SimulationGraph simulationGraph = TrafficSimulationUtil.convertSimulaionEnvironmentToGraph(getTrafficSimulationViewInstance());
+        SimulationGraph simulationGraph =
+                TrafficSimulationUtil.convertSimulaionEnvironmentToGraph(getTrafficSimulationViewInstance());
 
         do {
-            addNewLogEntry("\n--------------------------------------\nCounter: " + globalCounter +
-                    "\n--------------------------------------\n");
+            lblCounter.setText(String.valueOf(globalCounter));
+
             vehicleLabels.clear();
 
             for (int i = 0; i < simulationStep; i++) {
-                // generate new vehicle
-                environmentSetup.generateVehicle(simulationGraph);
+                // check each flow
+                for (TrafficFlow trafficFlow : trafficFlows) {
+                    if (trafficFlow.getStartTime() <= globalCounter && trafficFlow.getEndTime() >= globalCounter) {
+                        // generate new vehicle
+                        environmentSetup.generateVehicle(simulationGraph, trafficFlow);
+                    }
+                }
                 // segment acceleration
                 environmentSetup.checkSegments(vehDest);
                 // manage intersections traffic lights
@@ -462,12 +637,7 @@ public class TrafficSimulationView {
 
             for (Segment segment : segments) {
 
-                addNewLogEntry("\nSegment " + segment.getId() + ":" + "\n" + "Size: " + segment.getSize() + "\n");
-
                 for (Vehicle veh : segment.getVehicles()) {
-
-                    addNewLogEntry("\nVehicle " + veh.getId() + ": \nCurrent distance: " + veh.getCurrentDistance() + "\nCurrent speed: "
-                            + veh.getSpeed() + "\nDistance to next obstacle: " + veh.getDistanceToObstacle() + "\n");
 
                     JLabel lblO = new JLabel(String.valueOf(veh.getId()));
 
@@ -501,15 +671,16 @@ public class TrafficSimulationView {
                 }
             }
 
-            globalCounter++;
+            globalCounter += simulationStep;
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
-        } while (globalCounter < SIMULATION_TIME_DEFAULT);
+        } while (globalCounter < simulationTime);
 
-        addNewLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
+        lblCounter.setText(String.valueOf(simulationTime));
+        addNewSimulationLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
     }
 
     /**
@@ -861,5 +1032,13 @@ public class TrafficSimulationView {
 
     public TrafficSimulationView getTrafficSimulationViewInstance() {
         return this;
+    }
+
+    public List<TrafficFlow> getTrafficFlows() {
+        return trafficFlows;
+    }
+
+    public void setTrafficFlows(List<TrafficFlow> trafficFlows) {
+        this.trafficFlows = trafficFlows;
     }
 }

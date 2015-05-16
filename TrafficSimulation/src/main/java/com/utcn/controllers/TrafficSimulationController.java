@@ -1,6 +1,6 @@
 package com.utcn.controllers;
 
-import com.utcn.application.TrafficSimulationView;
+import com.utcn.view.TrafficSimulationView;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.utils.TrafficSimulationUtil;

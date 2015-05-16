@@ -1,27 +1,23 @@
 package com.utcn.bl;
 
+
 import com.utcn.models.StandardEngine;
 import com.utcn.models.Vehicle;
 
-import java.util.Random;
+public abstract class VehicleGenerator {
 
-public class VehicleGenerator {
-
-    public static final int MIN = 2;
-    public static final int MAX = 8;
-
-    private int currentId;
-    private int counter;
+    private static int currentId;
+    protected int counter;
 
     public VehicleGenerator() {
-        generateNewRandomTime();
+        generateNewTime();
     }
 
-    public Vehicle generateNewVehicle() {
+    public Vehicle initNewVehicle() {
         Vehicle vehicle = new Vehicle();
 
         incrementCurrentId();
-        // setare
+
         vehicle.setId(currentId);
         vehicle.setEngine(new StandardEngine());
         vehicle.setSize(Vehicle.SIZE);
@@ -29,22 +25,19 @@ public class VehicleGenerator {
         return vehicle;
     }
 
-    public void generateNewRandomTime() {
-        Random rand = new Random();
-        counter = rand.nextInt((MAX - MIN) + 1) + MIN;
+    private void incrementCurrentId() {
+        currentId++;
     }
 
+    public abstract void generateNewTime();
+
     public boolean isCounterZero() {
+        counter--;
         if (counter == 0) {
-            generateNewRandomTime();
+            generateNewTime();
             return true;
         }
 
-        counter--;
         return false;
-    }
-
-    private void incrementCurrentId() {
-        currentId++;
     }
 }

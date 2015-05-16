@@ -26,6 +26,9 @@ public class Intersection extends JButton {
     private int currentPhase = 1;
     private int phaseCounter;
 
+    private int[] phaseTimes;
+    private Integer[] phaseOrder;
+
     /* segments */
     private Segment segmentNorthIn;
     private Segment segmentNorthOut;
@@ -199,7 +202,7 @@ public class Intersection extends JButton {
     }
 
     public int getCurrentPhase() {
-        return currentPhase;
+        return phaseOrder[currentPhase - 1];
     }
 
     public void setCurrentPhase(int currentPhase) {
@@ -238,8 +241,24 @@ public class Intersection extends JButton {
         this.trafficLightsEast = trafficLightsEast;
     }
 
+    public int[] getPhaseTimes() {
+        return phaseTimes;
+    }
+
+    public void setPhaseTimes(int[] phaseTimes) {
+        this.phaseTimes = phaseTimes;
+    }
+
+    public Integer[] getPhaseOrder() {
+        return phaseOrder;
+    }
+
+    public void setPhaseOrder(Integer[] phaseOrder) {
+        this.phaseOrder = phaseOrder;
+    }
+
     /**
-     * Switch to the next phase
+     * Switch to the next phase from list.
      */
     public void nextPhase() {
         if (currentPhase == phases) {

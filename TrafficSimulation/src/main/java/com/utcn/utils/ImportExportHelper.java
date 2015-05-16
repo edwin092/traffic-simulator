@@ -1,17 +1,20 @@
 package com.utcn.utils;
 
-import com.utcn.application.TrafficSimulationView;
+import com.utcn.flow.TrafficFlow;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
+import com.utcn.view.TrafficSimulationView;
+
+import java.util.List;
 
 public class ImportExportHelper {
 
     /**
      * Export simulation environment to a JSON file.
      */
-    public static boolean exportToJSON(String filepath, TrafficSimulationView view) {
+    public static boolean exportEnvironmentToJSON(String filepath, TrafficSimulationView view) {
 
-        return TrafficSimulationUtil.exportToJSON(filepath, convertToCustomImportExportClass(view));
+        return TrafficSimulationUtil.exportEnvironmentToJSON(filepath, convertToCustomImportExportClass(view));
     }
 
     /**
@@ -62,8 +65,8 @@ public class ImportExportHelper {
     /**
      * Import an already existing simulation environment.
      */
-    public static boolean importFromJSON(String filepath, TrafficSimulationView view) {
-        CustomImportExportClass customImportExportClass = TrafficSimulationUtil.importFromJSON(filepath);
+    public static boolean importEnvironmentFromJSON(String filepath, TrafficSimulationView view) {
+        CustomImportExportClass customImportExportClass = TrafficSimulationUtil.importEnvironmentFromJSON(filepath);
 
         if (customImportExportClass != null) {
             convertFromCustomImportExportClass(customImportExportClass, view);
@@ -148,5 +151,19 @@ public class ImportExportHelper {
                 }
             }
         }
+    }
+
+    /**
+     * Import traffic flows.
+     */
+    public static boolean importFlowFromJSON(String filepath, TrafficSimulationView view) {
+        List<TrafficFlow> trafficFlows = TrafficSimulationUtil.importFlowFromJSON(filepath);
+
+        if (trafficFlows == null || trafficFlows.isEmpty()) {
+            return false;
+        }
+
+        view.setTrafficFlows(trafficFlows);
+        return true;
     }
 }

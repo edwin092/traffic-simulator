@@ -1,12 +1,14 @@
 package com.utcn.bl;
 
 import com.utcn.application.BriefFormatter;
+import com.utcn.flow.TrafficFlow;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
 import com.utcn.utils.BreadthFirstSearch;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
+import com.utcn.view.TrafficSimulationView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,56 +24,50 @@ public class EnvironmentSetup {
     private Logger logger;
 
     // constante vehicle
-    public static final int ACCELERATION = 1;
-    public static final int DESIRED_SPEED = 50;
     public static final int VEHICLES_GAP = 1;
     public static final int PHASE_TIME = 15;
 
-    private VehicleGenerator vehicleGenerator;
     private List<Segment> segments;
     private List<Intersection> intersections;
     private int globalCounter;
 
-    /**
-     *
-     */
-    public EnvironmentSetup() {
-        logger = Logger.getLogger("MyLog");
-        FileHandler fh;
-
-        try {
-            // This block configure the logger with handler and formatter
-            fh = new FileHandler("MyLogFile.log");
-            logger.addHandler(fh);
-            BriefFormatter formatter = new BriefFormatter();
-            fh.setFormatter(formatter);
-            logger.setUseParentHandlers(false);
-        } catch (SecurityException | IOException e) {
-            e.printStackTrace();
-        }
-
-        vehicleGenerator = new VehicleGenerator();
-        this.segments = new ArrayList<>();
-        this.intersections = new ArrayList<>();
-
-        Segment seg1 = new Segment();
-        Segment seg2 = new Segment();
-        Intersection intersection = new Intersection();
-
-        // 2 faze
-        intersection.setPhases(2);
-        intersection.setTrafficLightEast(true);
-
-        seg1.setIntersectionIn(intersection);
-        seg2.setIntersectionOut(intersection);
-        intersection.setSegmentEastIn(seg1);
-        intersection.setSegmentVestOut(seg2);
-
-        segments.add(seg1);
-        segments.add(seg2);
-
-        intersections.add(intersection);
-    }
+//    public EnvironmentSetup() {
+//        logger = Logger.getLogger("MyLog");
+//        FileHandler fh;
+//
+//        try {
+//            // This block configure the logger with handler and formatter
+//            fh = new FileHandler("MyLogFile.log");
+//            logger.addHandler(fh);
+//            BriefFormatter formatter = new BriefFormatter();
+//            fh.setFormatter(formatter);
+//            logger.setUseParentHandlers(false);
+//        } catch (SecurityException | IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        randomVehicleGenerator = new RandomVehicleGenerator();
+//        this.segments = new ArrayList<>();
+//        this.intersections = new ArrayList<>();
+//
+//        Segment seg1 = new Segment();
+//        Segment seg2 = new Segment();
+//        Intersection intersection = new Intersection();
+//
+//        // 2 faze
+//        intersection.setPhases(2);
+//        intersection.setTrafficLightEast(true);
+//
+//        seg1.setIntersectionIn(intersection);
+//        seg2.setIntersectionOut(intersection);
+//        intersection.setSegmentEastIn(seg1);
+//        intersection.setSegmentVestOut(seg2);
+//
+//        segments.add(seg1);
+//        segments.add(seg2);
+//
+//        intersections.add(intersection);
+//    }
 
     public EnvironmentSetup(List<Segment> segments,
                             List<Intersection> intersections, boolean isFileLoggingEnabled) {
@@ -102,7 +98,6 @@ public class EnvironmentSetup {
             }
         }
 
-        vehicleGenerator = new VehicleGenerator();
         this.segments = segments;
         this.intersections = intersections;
     }
@@ -121,19 +116,21 @@ public class EnvironmentSetup {
     }
 
     /**
-     *
+     * Generate a new vehicle.
      */
-    public void generateVehicle(SimulationGraph simulationGraph) {
-        if (vehicleGenerator.isCounterZero()) {
+    public void generateVehicle(SimulationGraph simulationGraph, TrafficFlow trafficFlow) {
+        if (trafficFlow.getVehicleGenerator().isCounterZero()) {
 
             logger.info("New Vehicle generated!");
 
-            Vehicle newVehicle = vehicleGenerator.generateNewVehicle();
+            Vehicle newVehicle = trafficFlow.getVehicleGenerator().initNewVehicle();
 
-            List<Integer> solution = null;
+            List<Integer> intersectionIdsSolution = null;
+            int startId = trafficFlow.getStartingPoint();
+            int endId;
             do {
-                int startId = getRandomIntersectionId();
-                int endId;
+//                startId = getRandomIntersectionId();
+
                 do {
                     endId = getRandomIntersectionId();
                 } while (startId == endId);
@@ -144,17 +141,17 @@ public class EnvironmentSetup {
 
                 for (int i = 1; i <= solutions.size(); i++) {
                     if (solutions.get(i).size() > 2) {
-                        solution = solutions.get(i);
+                        intersectionIdsSolution = solutions.get(i);
                     }
                 }
-            } while (solution == null);
+            } while (intersectionIdsSolution == null);
 
 
             List<Segment> routeList = new ArrayList<>();
-            for (int i = 0; i < solution.size() - 1; i++) {
+            for (int i = 0; i < intersectionIdsSolution.size() - 1; i++) {
                 for (Segment segment : segments) {
-                    if (segment.getIntersectionIn().getId() == solution.get(i) &&
-                            segment.getIntersectionOut().getId() == solution.get(i + 1)) {
+                    if (segment.getIntersectionIn().getId() == intersectionIdsSolution.get(i) &&
+                            segment.getIntersectionOut().getId() == intersectionIdsSolution.get(i + 1)) {
                         routeList.add(segment);
                         break;
                     }
@@ -165,6 +162,11 @@ public class EnvironmentSetup {
             newVehicle.setDestination(routeList.get(routeList.size() - 1));
             newVehicle.setRouteList(routeList);
             routeList.get(0).getVehicles().add(newVehicle);
+
+
+            TrafficSimulationView.addNewSimulationLogEntry("\n\nVehicle " + newVehicle.getId() + ":");
+            TrafficSimulationView.addNewSimulationLogEntry("\n  Starting point: Intersection " + startId);
+            TrafficSimulationView.addNewSimulationLogEntry("\n  End point:      Intersection " + endId);
         }
     }
 
@@ -289,58 +291,71 @@ public class EnvironmentSetup {
      */
     public void manageIntersectionsTrafficLights() {
         for (Intersection intersection : intersections) {
-            if (intersection.getPhaseCounter() == PHASE_TIME) {
+
+            if (intersection.getPhaseCounter() == intersection.getPhaseTimes()[intersection.getCurrentPhase() - 1]) {
                 // reset counter
                 intersection.setPhaseCounter(0);
                 // switch to next phase
                 intersection.nextPhase();
 
-                // check current phase
-                if (intersection.getCurrentPhase() == 1) {
-                    // PHASE 1
-                    intersection.setTrafficLightsSouth(new boolean[]{false,
-                            true, true});
-                    intersection.setTrafficLightsNorth(new boolean[]{false,
-                            true, true});
-                    intersection.setTrafficLightsEast(new boolean[]{false,
-                            false, false});
-                    intersection.setTrafficLightsVest(new boolean[]{false,
-                            false, false});
-                } else if (intersection.getCurrentPhase() == 2) {
-                    // PHASE 2
-                    intersection.setTrafficLightsSouth(new boolean[]{false,
-                            false, false});
-                    intersection.setTrafficLightsNorth(new boolean[]{false,
-                            false, false});
-                    intersection.setTrafficLightsEast(new boolean[]{false,
-                            true, true});
-                    intersection.setTrafficLightsVest(new boolean[]{false,
-                            true, true});
-                } else if (intersection.getCurrentPhase() == 3) {
-                    // PHASE 3
-                    intersection.setTrafficLightsSouth(new boolean[]{false,
-                            false, true});
-                    intersection.setTrafficLightsNorth(new boolean[]{false,
-                            false, true});
-                    intersection.setTrafficLightsEast(new boolean[]{true,
-                            false, false});
-                    intersection.setTrafficLightsVest(new boolean[]{true,
-                            false, false});
-                } else {
-                    // PHASE 4
-                    intersection.setTrafficLightsSouth(new boolean[]{true,
-                            false, false});
-                    intersection.setTrafficLightsNorth(new boolean[]{true,
-                            false, false});
-                    intersection.setTrafficLightsEast(new boolean[]{false,
-                            false, true});
-                    intersection.setTrafficLightsVest(new boolean[]{false,
-                            false, true});
-                }
+                TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
             } else {
                 intersection
                         .setPhaseCounter(intersection.getPhaseCounter() + 1);
             }
+
+//            if (intersection.getPhaseCounter() == PHASE_TIME) {
+//                // reset counter
+//                intersection.setPhaseCounter(0);
+//                // switch to next phase
+//                intersection.nextPhase();
+//
+//                // check current phase
+//                if (intersection.getCurrentPhase() == 1) {
+//                    // PHASE 1
+//                    intersection.setTrafficLightsSouth(new boolean[]{false,
+//                            true, true});
+//                    intersection.setTrafficLightsNorth(new boolean[]{false,
+//                            true, true});
+//                    intersection.setTrafficLightsEast(new boolean[]{false,
+//                            false, false});
+//                    intersection.setTrafficLightsVest(new boolean[]{false,
+//                            false, false});
+//                } else if (intersection.getCurrentPhase() == 2) {
+//                    // PHASE 2
+//                    intersection.setTrafficLightsSouth(new boolean[]{false,
+//                            false, false});
+//                    intersection.setTrafficLightsNorth(new boolean[]{false,
+//                            false, false});
+//                    intersection.setTrafficLightsEast(new boolean[]{false,
+//                            true, true});
+//                    intersection.setTrafficLightsVest(new boolean[]{false,
+//                            true, true});
+//                } else if (intersection.getCurrentPhase() == 3) {
+//                    // PHASE 3
+//                    intersection.setTrafficLightsSouth(new boolean[]{false,
+//                            false, true});
+//                    intersection.setTrafficLightsNorth(new boolean[]{false,
+//                            false, true});
+//                    intersection.setTrafficLightsEast(new boolean[]{true,
+//                            false, false});
+//                    intersection.setTrafficLightsVest(new boolean[]{true,
+//                            false, false});
+//                } else {
+//                    // PHASE 4
+//                    intersection.setTrafficLightsSouth(new boolean[]{true,
+//                            false, false});
+//                    intersection.setTrafficLightsNorth(new boolean[]{true,
+//                            false, false});
+//                    intersection.setTrafficLightsEast(new boolean[]{false,
+//                            false, true});
+//                    intersection.setTrafficLightsVest(new boolean[]{false,
+//                            false, true});
+//                }
+//            } else {
+//                intersection
+//                        .setPhaseCounter(intersection.getPhaseCounter() + 1);
+//            }
         }
     }
 
@@ -469,163 +484,163 @@ public class EnvironmentSetup {
      */
     public void simulate() {
 
-        logger.info("---SIMULATION STARTED---");
-        logger.info("------------------------");
-        logger.info("--- NUMBER OF SEGMENTS: " + segments.size() + "---");
-        logger.info("--- NUMBER OF INTERSECTIONS: " + intersections.size()
-                + "---");
-        logger.info("------------------------");
-
-        int vehDest = 0;
-
-        do {
-
-            logger.info("\n\nSIMULATION TIME: " + globalCounter);
-
-            // generator masini
-            if (vehicleGenerator.isCounterZero()) {
-
-                logger.info("New Vehicle generated!");
-
-                Vehicle newVehicle = vehicleGenerator.generateNewVehicle();
-
-                newVehicle.setCurrentSegment(segments.get(0));
-                newVehicle.setDestination(segments.get(1));
-                newVehicle.setRouteList(segments);
-
-                segments.get(0).getVehicles().add(newVehicle);
-            }
-
-            // verificare tronsoane
-            int k = 1;
-            for (Segment seg : segments) {
-
-                logger.info("\nSEGEMENT " + k + " STATUS:");
-                logger.info("---VEHICLES:");
-
-                // vehicles list from current segment
-                List<Vehicle> segmentVehicles = seg.getVehicles();
-                if (!segmentVehicles.isEmpty()) {
-                    if (segmentVehicles.size() == 1) {
-                        // go 1 m
-                        segmentVehicles.get(0)
-                                .setCurrentDistance(
-                                        segmentVehicles.get(0)
-                                                .getCurrentDistance() + 1);
-                    } else {
-                        for (int i = 0; i < segmentVehicles.size() - 1; i++) {
-
-                            if (segmentVehicles.get(i + 1).getCurrentDistance() < seg
-                                    .getLength()) {
-                                if ((segmentVehicles.get(i)
-                                        .getCurrentDistance() - seg
-                                        .getVehicles().get(i + 1)
-                                        .getCurrentDistance()) > VEHICLES_GAP) {
-                                    // go 1 m
-                                    segmentVehicles
-                                            .get(i + 1)
-                                            .setCurrentDistance(
-                                                    segmentVehicles
-                                                            .get(i + 1)
-                                                            .getCurrentDistance() + 1);
-                                }
-                            }
-                        }
-
-                        // last vehicle -> first generated
-                        if (segmentVehicles.get(0).getCurrentDistance() == seg
-                                .getLength()) {
-                            if (seg.getIntersectionOut() == null) {
-
-                                // am ajuns la dest
-                                seg.getVehicles()
-                                        .remove(segmentVehicles.get(0));
-
-                                vehDest++;
-                            } else {
-                                // semafor verde
-                                if (seg.getIntersectionOut()
-                                        .isTrafficLightVest()) {
-
-                                    Segment nextSegment = segmentVehicles
-                                            .get(0)
-                                            .getRouteList()
-                                            .get(segmentVehicles.get(0)
-                                                    .getRouteList()
-                                                    .indexOf(seg) + 1);
-
-                                    segmentVehicles.get(0)
-                                            .setCurrentDistance(0);
-
-                                    segmentVehicles.get(0).setCurrentSegment(
-                                            nextSegment);
-                                    nextSegment.getVehicles().add(
-                                            segmentVehicles.get(0));
-
-                                    segmentVehicles.remove(0);
-                                }
-                            }
-                        } else if (segmentVehicles.get(0).getCurrentDistance() < seg
-                                .getLength()) {
-                            segmentVehicles.get(0)
-                                    .setCurrentDistance(
-                                            segmentVehicles.get(0)
-                                                    .getCurrentDistance() + 1);
-                        }
-                    }
-
-                    // log vehicles
-                    for (int i = 0; i < segmentVehicles.size(); i++) {
-                        logger.info("VEHICLE " + i + " distance: "
-                                + segmentVehicles.get(i).getCurrentDistance());
-                    }
-                }
-
-                k++;
-            }
-
-            // check intersections
-            for (Intersection intersection : intersections) {
-
-                logger.info("\nTRAFFIC LIGHT: "
-                        + intersection.isTrafficLightVest());
-                logger.info("CURRENT PHASE: " + intersection.getCurrentPhase());
-                logger.info("PHASE COUNTER: " + intersection.getPhaseCounter());
-
-                if (intersection.getPhaseCounter() == PHASE_TIME) {
-                    // reset counter
-                    intersection.setPhaseCounter(0);
-                    // switch to next phase
-                    intersection.nextPhase();
-
-                    // check current phase
-                    if (intersection.getCurrentPhase() == 1) {
-                        // GREEN
-                        intersection.setTrafficLightVest(true);
-                    } else {
-                        // phase 2
-                        // RED
-                        intersection.setTrafficLightVest(false);
-                    }
-                } else {
-                    intersection
-                            .setPhaseCounter(intersection.getPhaseCounter() + 1);
-                }
-            }
-
-            // increment global counter
-            globalCounter++;
-            System.out.println(globalCounter);
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-        } while (globalCounter != 200);
-
-        logger.info("\nNumber of vehicles at destination: " + vehDest);
-        logger.info("---SIMULATION ENDED---");
+//        logger.info("---SIMULATION STARTED---");
+//        logger.info("------------------------");
+//        logger.info("--- NUMBER OF SEGMENTS: " + segments.size() + "---");
+//        logger.info("--- NUMBER OF INTERSECTIONS: " + intersections.size()
+//                + "---");
+//        logger.info("------------------------");
+//
+//        int vehDest = 0;
+//
+//        do {
+//
+//            logger.info("\n\nSIMULATION TIME: " + globalCounter);
+//
+//            // generator masini
+//            if (randomVehicleGenerator.isCounterZero()) {
+//
+//                logger.info("New Vehicle generated!");
+//
+//                Vehicle newVehicle = randomVehicleGenerator.initNewVehicle();
+//
+//                newVehicle.setCurrentSegment(segments.get(0));
+//                newVehicle.setDestination(segments.get(1));
+//                newVehicle.setRouteList(segments);
+//
+//                segments.get(0).getVehicles().add(newVehicle);
+//            }
+//
+//            // verificare tronsoane
+//            int k = 1;
+//            for (Segment seg : segments) {
+//
+//                logger.info("\nSEGEMENT " + k + " STATUS:");
+//                logger.info("---VEHICLES:");
+//
+//                // vehicles list from current segment
+//                List<Vehicle> segmentVehicles = seg.getVehicles();
+//                if (!segmentVehicles.isEmpty()) {
+//                    if (segmentVehicles.size() == 1) {
+//                        // go 1 m
+//                        segmentVehicles.get(0)
+//                                .setCurrentDistance(
+//                                        segmentVehicles.get(0)
+//                                                .getCurrentDistance() + 1);
+//                    } else {
+//                        for (int i = 0; i < segmentVehicles.size() - 1; i++) {
+//
+//                            if (segmentVehicles.get(i + 1).getCurrentDistance() < seg
+//                                    .getLength()) {
+//                                if ((segmentVehicles.get(i)
+//                                        .getCurrentDistance() - seg
+//                                        .getVehicles().get(i + 1)
+//                                        .getCurrentDistance()) > VEHICLES_GAP) {
+//                                    // go 1 m
+//                                    segmentVehicles
+//                                            .get(i + 1)
+//                                            .setCurrentDistance(
+//                                                    segmentVehicles
+//                                                            .get(i + 1)
+//                                                            .getCurrentDistance() + 1);
+//                                }
+//                            }
+//                        }
+//
+//                        // last vehicle -> first generated
+//                        if (segmentVehicles.get(0).getCurrentDistance() == seg
+//                                .getLength()) {
+//                            if (seg.getIntersectionOut() == null) {
+//
+//                                // am ajuns la dest
+//                                seg.getVehicles()
+//                                        .remove(segmentVehicles.get(0));
+//
+//                                vehDest++;
+//                            } else {
+//                                // semafor verde
+//                                if (seg.getIntersectionOut()
+//                                        .isTrafficLightVest()) {
+//
+//                                    Segment nextSegment = segmentVehicles
+//                                            .get(0)
+//                                            .getRouteList()
+//                                            .get(segmentVehicles.get(0)
+//                                                    .getRouteList()
+//                                                    .indexOf(seg) + 1);
+//
+//                                    segmentVehicles.get(0)
+//                                            .setCurrentDistance(0);
+//
+//                                    segmentVehicles.get(0).setCurrentSegment(
+//                                            nextSegment);
+//                                    nextSegment.getVehicles().add(
+//                                            segmentVehicles.get(0));
+//
+//                                    segmentVehicles.remove(0);
+//                                }
+//                            }
+//                        } else if (segmentVehicles.get(0).getCurrentDistance() < seg
+//                                .getLength()) {
+//                            segmentVehicles.get(0)
+//                                    .setCurrentDistance(
+//                                            segmentVehicles.get(0)
+//                                                    .getCurrentDistance() + 1);
+//                        }
+//                    }
+//
+//                    // log vehicles
+//                    for (int i = 0; i < segmentVehicles.size(); i++) {
+//                        logger.info("VEHICLE " + i + " distance: "
+//                                + segmentVehicles.get(i).getCurrentDistance());
+//                    }
+//                }
+//
+//                k++;
+//            }
+//
+//            // check intersections
+//            for (Intersection intersection : intersections) {
+//
+//                logger.info("\nTRAFFIC LIGHT: "
+//                        + intersection.isTrafficLightVest());
+//                logger.info("CURRENT PHASE: " + intersection.getCurrentPhase());
+//                logger.info("PHASE COUNTER: " + intersection.getPhaseCounter());
+//
+//                if (intersection.getPhaseCounter() == PHASE_TIME) {
+//                    // reset counter
+//                    intersection.setPhaseCounter(0);
+//                    // switch to next phase
+//                    intersection.nextPhase();
+//
+//                    // check current phase
+//                    if (intersection.getCurrentPhase() == 1) {
+//                        // GREEN
+//                        intersection.setTrafficLightVest(true);
+//                    } else {
+//                        // phase 2
+//                        // RED
+//                        intersection.setTrafficLightVest(false);
+//                    }
+//                } else {
+//                    intersection
+//                            .setPhaseCounter(intersection.getPhaseCounter() + 1);
+//                }
+//            }
+//
+//            // increment global counter
+//            globalCounter++;
+//            System.out.println(globalCounter);
+//            try {
+//                Thread.sleep(300);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//
+//        } while (globalCounter != 200);
+//
+//        logger.info("\nNumber of vehicles at destination: " + vehDest);
+//        logger.info("---SIMULATION ENDED---");
     }
 
     public List<Segment> getSegments() {
