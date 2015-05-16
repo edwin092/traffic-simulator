@@ -346,4 +346,48 @@ public class Intersection extends JButton {
 
         throw new NullPointerException("Segments missing!");
     }
+
+    /**
+     * Checks if intersection has 4 phases.
+     */
+    public boolean isFourPhased() {
+        int nOfSegments = 0;
+
+        if (segmentEastIn != null) {
+            nOfSegments++;
+        }
+        if (segmentEastOut != null) {
+            nOfSegments++;
+        }
+        if (segmentVestIn != null) {
+            nOfSegments++;
+        }
+        if (segmentVestOut != null) {
+            nOfSegments++;
+        }
+        if (segmentNorthIn != null) {
+            nOfSegments++;
+        }
+        if (segmentNorthOut != null) {
+            nOfSegments++;
+        }
+        if (segmentSouthIn != null) {
+            nOfSegments++;
+        }
+        if (segmentSouthOut != null) {
+            nOfSegments++;
+        }
+
+        return nOfSegments >= 6 ? true : false;
+    }
+
+    /**
+     *
+     */
+    public void setAllLightsTrue() {
+        trafficLightsNorth = new boolean[]{true, true, true};
+        trafficLightsSouth = new boolean[]{true, true, true};
+        trafficLightsVest = new boolean[]{true, true, true};
+        trafficLightsEast = new boolean[]{true, true, true};
+    }
 }

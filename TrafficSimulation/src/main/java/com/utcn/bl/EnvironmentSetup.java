@@ -291,17 +291,18 @@ public class EnvironmentSetup {
      */
     public void manageIntersectionsTrafficLights() {
         for (Intersection intersection : intersections) {
+            if (intersection.isFourPhased()) {
+                if (intersection.getPhaseCounter() == intersection.getPhaseTimes()[intersection.getCurrentPhase() - 1]) {
+                    // reset counter
+                    intersection.setPhaseCounter(0);
+                    // switch to next phase
+                    intersection.nextPhase();
 
-            if (intersection.getPhaseCounter() == intersection.getPhaseTimes()[intersection.getCurrentPhase() - 1]) {
-                // reset counter
-                intersection.setPhaseCounter(0);
-                // switch to next phase
-                intersection.nextPhase();
-
-                TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
-            } else {
-                intersection
-                        .setPhaseCounter(intersection.getPhaseCounter() + 1);
+                    TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
+                } else {
+                    intersection
+                            .setPhaseCounter(intersection.getPhaseCounter() + 1);
+                }
             }
 
 //            if (intersection.getPhaseCounter() == PHASE_TIME) {

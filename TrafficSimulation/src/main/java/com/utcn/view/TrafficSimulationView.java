@@ -580,12 +580,19 @@ public class TrafficSimulationView {
         }
     }
 
+    /**
+     *
+     */
     private void setPhaseTimeAndOrderForIntersections() {
         for (Intersection intersection : intersectionButtons) {
-            intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
-            intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
+            if (intersection.isFourPhased()) {
+                intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
+                intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
 
-            TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
+                TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
+            } else {
+                intersection.setAllLightsTrue();
+            }
         }
     }
 
