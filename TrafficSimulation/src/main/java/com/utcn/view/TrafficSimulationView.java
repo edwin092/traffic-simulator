@@ -1,6 +1,7 @@
 package com.utcn.view;
 
 import com.utcn.bl.EnvironmentSetup;
+import com.utcn.bl.VehicleGenerator;
 import com.utcn.controllers.TrafficSimulationController;
 import com.utcn.flow.TrafficFlow;
 import com.utcn.models.Intersection;
@@ -28,6 +29,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TrafficSimulationView {
 
+    public static final String NO_CONFIG_FILE_MSG = "No config file added";
+    public static final String CONFIG_FILE_LOADED_MSG = "Config file NAME added";
+
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
     public static final int TRAFFIC_LIGHT_SIZE = 5;
@@ -45,25 +49,33 @@ public class TrafficSimulationView {
     private int yClick;
     private boolean isIntersectionSelected;
     private boolean isSegmentSelected;
+    private boolean isSimulationPaused;
+    // simulation panel
     private JPanel panelSimulation;
+    // text log areas
     private static StyledDocument textPaneSimulationLog;
     private static StyledDocument textPaneStatisticsLog;
+    // menu items
     private JMenuItem startMenuItem;
+    private JMenuItem pauseMenuItem;
+    private JMenuItem resumeMenuItem;
+    // text labels
     private JLabel lblCounter;
     private JLabel lblStep;
     private JLabel lblSimulationTime;
-
+    private JLabel lblConfigFileText;
+    // components ids
     private int currentSegment = 1;
     private int currentSegId = 1;
     private int currentIntersId = 1;
-
-    private List<Intersection> intersectionButtons = new ArrayList<>();
+    // components
+    private List<Intersection> intersections = new ArrayList<>();
     private List<Segment> segments = new ArrayList<>();
+    private List<TrafficFlow> trafficFlows;
 
     private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
 
-    private List<TrafficFlow> trafficFlows;
 //
 //    @JsonIgnore
 //    private List<JLabel> labels;
@@ -166,6 +178,21 @@ public class TrafficSimulationView {
         JMenu mnSimulation = new JMenu("Simulation");
         menuBar.add(mnSimulation);
 
+        JMenuItem newSimMenuItem = new JMenuItem("New");
+        newSimMenuItem.addActionListener(new ActionListener() {
+            public synchronized void actionPerformed(ActionEvent e) {
+                isSimulationPaused = true;
+                int reply = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you want a new simulation? \nAll current progress will be deleted!");
+                if (reply == JOptionPane.YES_OPTION) {
+                    resetSimulationPanel();
+                } else {
+                    isSimulationPaused = false;
+                }
+            }
+        });
+        mnSimulation.add(newSimMenuItem);
+
         JMenuItem generateConfigMenuItem = new JMenuItem("Generate config file");
         generateConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -188,8 +215,8 @@ public class TrafficSimulationView {
                     boolean res = ImportExportHelper.importFlowFromJSON(fc.getSelectedFile().getAbsolutePath(),
                             getTrafficSimulationViewInstance());
                     if (res) {
-                        JOptionPane.showMessageDialog(frame,
-                                "Import succeeded.");
+                        lblConfigFileText.setText(CONFIG_FILE_LOADED_MSG.replace("NAME", fc.getSelectedFile().getName()));
+                        lblConfigFileText.setForeground(Color.BLUE);
                     } else {
                         JOptionPane.showMessageDialog(frame,
                                 "Import failed.",
@@ -208,6 +235,10 @@ public class TrafficSimulationView {
                 SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                     @Override
                     public Void doInBackground() {
+                        isSimulationPaused = false;
+                        // enable Pause/Resume menu items
+                        pauseMenuItem.setEnabled(true);
+                        resumeMenuItem.setEnabled(true);
                         // Request simulation time from user
                         requestSimulationTime();
                         // Request simulation step from user
@@ -227,6 +258,29 @@ public class TrafficSimulationView {
         });
         mnSimulation.add(startMenuItem);
 
+        pauseMenuItem = new JMenuItem("Pause");
+        pauseMenuItem.setEnabled(false);
+        pauseMenuItem.addActionListener(new ActionListener() {
+            public synchronized void actionPerformed(ActionEvent e) {
+                isSimulationPaused = true;
+
+                addNewSimulationLogEntry("\n\nSimulation paused!");
+            }
+        });
+        mnSimulation.add(pauseMenuItem);
+
+        resumeMenuItem = new JMenuItem("Resume");
+        resumeMenuItem.setEnabled(false);
+        resumeMenuItem.addActionListener(new ActionListener() {
+            public synchronized void actionPerformed(ActionEvent e) {
+                isSimulationPaused = false;
+                resumeSimulation();
+
+                addNewSimulationLogEntry("\n\nSimulation resumed!");
+            }
+        });
+        mnSimulation.add(resumeMenuItem);
+
         JMenu mnComponents = new JMenu("Components");
         menuBar.add(mnComponents);
 
@@ -234,8 +288,6 @@ public class TrafficSimulationView {
         mntmClear.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 clearComponents();
-
-                panelSimulation.repaint();
             }
         });
         mnComponents.add(mntmClear);
@@ -267,7 +319,7 @@ public class TrafficSimulationView {
         mntmAbout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Bogdan + Edwin = Bogwin");
+                JOptionPane.showMessageDialog(null, "Bogdan & Edwin");
             }
         });
         mnHelp.add(mntmAbout);
@@ -344,7 +396,7 @@ public class TrafficSimulationView {
                 createGridForSimulation(g, this.getWidth(), this.getHeight());
                 addTrafficLightsToSimulation();
 
-                for (Intersection intersection : intersectionButtons) {
+                for (Intersection intersection : intersections) {
 
                     this.add(intersection);
 
@@ -428,6 +480,24 @@ public class TrafficSimulationView {
         lblStep.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lblStep.setBounds(295, 4, 46, 22);
         frame.getContentPane().add(lblStep);
+
+        lblConfigFileText = new JLabel(NO_CONFIG_FILE_MSG);
+        lblConfigFileText.setFont(new Font("Tahoma", Font.BOLD, 11));
+        lblConfigFileText.setForeground(Color.RED);
+        lblConfigFileText.setBounds(340, 9, 153, 14);
+        frame.getContentPane().add(lblConfigFileText);
+    }
+
+    /**
+     * Reset text from each text label.
+     */
+    private void resetAllTextLabels() {
+        lblCounter.setText("0");
+        lblSimulationTime.setText("0");
+        lblStep.setText("0");
+
+        lblConfigFileText.setText(NO_CONFIG_FILE_MSG);
+        lblConfigFileText.setForeground(Color.RED);
     }
 
     /**
@@ -501,7 +571,7 @@ public class TrafficSimulationView {
     public void clearStatisticsArea() {
         try {
             textPaneStatisticsLog.remove(0, textPaneStatisticsLog.getLength());
-            addNewSimulationLogEntry("Statistics");
+            addNewStatisticsLogEntry("Statistics");
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
@@ -584,7 +654,7 @@ public class TrafficSimulationView {
      *
      */
     private void setPhaseTimeAndOrderForIntersections() {
-        for (Intersection intersection : intersectionButtons) {
+        for (Intersection intersection : intersections) {
             if (intersection.isFourPhased()) {
                 intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
                 intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
@@ -594,6 +664,13 @@ public class TrafficSimulationView {
                 intersection.setAllLightsTrue();
             }
         }
+    }
+
+    /**
+     * Resumes current simulation by notifying all threads.
+     */
+    private synchronized void resumeSimulation() {
+        this.notifyAll();
     }
 
     /**
@@ -612,7 +689,7 @@ public class TrafficSimulationView {
         setPhaseTimeAndOrderForIntersections();
 
         // creates a new environment
-        environmentSetup = new EnvironmentSetup(segments, intersectionButtons,
+        environmentSetup = new EnvironmentSetup(segments, intersections,
                 false);
 
         vehicleLabels = new CopyOnWriteArrayList<>();
@@ -624,6 +701,14 @@ public class TrafficSimulationView {
                 TrafficSimulationUtil.convertSimulaionEnvironmentToGraph(getTrafficSimulationViewInstance());
 
         do {
+            if (isSimulationPaused) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+
             lblCounter.setText(String.valueOf(globalCounter));
 
             vehicleLabels.clear();
@@ -695,7 +780,7 @@ public class TrafficSimulationView {
      */
     private void addTrafficLightsToSimulation() {
         // Add traffic lights to intersections
-        for (Intersection intersection : getIntersectionButtons()) {
+        for (Intersection intersection : getIntersections()) {
             // NORTH
             // LEFT
             JTextField trafficLightLeft = new JTextField();
@@ -854,7 +939,25 @@ public class TrafficSimulationView {
     }
 
     /**
-     *
+     * Resets all elements from the simulation panel.
+     */
+    public synchronized void resetSimulationPanel() {
+        // cleat components
+        clearComponents();
+        // reset vehicle ids
+        VehicleGenerator.currentId = 0;
+        // clear log areas
+        clearSimulationLogArea();
+        clearStatisticsArea();
+        // reset text labels
+        resetAllTextLabels();
+        // disable Pause/Resume menu items
+        pauseMenuItem.setEnabled(false);
+        resumeMenuItem.setEnabled(false);
+    }
+
+    /**
+     * Removes all the components from the simulation view.
      */
     public void clearComponents() {
         vehicleLabels = null;
@@ -865,14 +968,17 @@ public class TrafficSimulationView {
         panelSimulation.removeAll();
         panelSimulation.revalidate();
 
-        intersectionButtons = new ArrayList<>();
+        intersections = new ArrayList<>();
         segments = new ArrayList<>();
+        trafficFlows = null;
 
         segmentCoordsX = new HashMap<>();
         segmentCoordsY = new HashMap<>();
+
+        panelSimulation.repaint();
     }
 
-
+    // setters and getters
     public void addMouseClickListener(MouseListener mouseListener) {
         panelSimulation.addMouseListener(mouseListener);
     }
@@ -937,12 +1043,12 @@ public class TrafficSimulationView {
         this.isSegmentSelected = isSegmentSelected;
     }
 
-    public List<Intersection> getIntersectionButtons() {
-        return intersectionButtons;
+    public List<Intersection> getIntersections() {
+        return intersections;
     }
 
-    public void setIntersectionButtons(List<Intersection> intersectionButtons) {
-        this.intersectionButtons = intersectionButtons;
+    public void setIntersections(List<Intersection> intersections) {
+        this.intersections = intersections;
     }
 
     public List<Segment> getSegments() {

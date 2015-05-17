@@ -29,7 +29,7 @@ public class ImportExportHelper {
         customImportExportClass.setSegmentCoordsX(view.getSegmentCoordsX());
         customImportExportClass.setSegmentCoordsY(view.getSegmentCoordsY());
 
-        for (Intersection intersection : view.getIntersectionButtons()) {
+        for (Intersection intersection : view.getIntersections()) {
             CustomImportExportClass.CustomIntersection customIntersection = new CustomImportExportClass.CustomIntersection();
 
             customIntersection.setId(intersection.getId());
@@ -96,7 +96,7 @@ public class ImportExportHelper {
                     TrafficSimulationView.INTERSECTION_SIZE,
                     TrafficSimulationView.INTERSECTION_SIZE);
 
-            view.getIntersectionButtons().add(intersection);
+            view.getIntersections().add(intersection);
         }
 
         // generate segments
@@ -112,7 +112,7 @@ public class ImportExportHelper {
             segment.setLineCoordsX(coordsX);
             segment.setLineCoordsY(coordsY);
 
-            for (Intersection intersection : view.getIntersectionButtons()) {
+            for (Intersection intersection : view.getIntersections()) {
                 if (customSegment.getIntersectionInId() == intersection.getId()) {
                     segment.setIntersectionIn(intersection);
                 } else if (customSegment.getIntersectionOutId() == intersection.getId()) {
@@ -125,7 +125,7 @@ public class ImportExportHelper {
 
         // add segments to intersections
         for (CustomImportExportClass.CustomIntersection customIntersection : customImportExportClass.getIntersections()) {
-            for (Intersection intersection : view.getIntersectionButtons()) {
+            for (Intersection intersection : view.getIntersections()) {
                 if (intersection.getId() == customIntersection.getId()) {
 
                     for (Segment segment : view.getSegments()) {

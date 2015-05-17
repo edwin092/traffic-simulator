@@ -91,7 +91,7 @@ public class TrafficSimulationController {
          * @return
          */
         private Intersection getFirstSelectedIntersection() {
-            for (Intersection intersection : simView.getIntersectionButtons()) {
+            for (Intersection intersection : simView.getIntersections()) {
                 if (intersection.isAnySegmentSelected()) {
                     return intersection;
                 }
@@ -103,7 +103,7 @@ public class TrafficSimulationController {
          *
          */
         private void resetAllSegments() {
-            for (Intersection intersection : simView.getIntersectionButtons()) {
+            for (Intersection intersection : simView.getIntersections()) {
                 intersection.setAllSegmentsFalse();
             }
         }
@@ -156,7 +156,7 @@ public class TrafficSimulationController {
             Intersection firstSelectedIntersection = getFirstSelectedIntersection();
             boolean entered = false;
 
-            for (Intersection intersection : simView.getIntersectionButtons()) {
+            for (Intersection intersection : simView.getIntersections()) {
 
                 // North
                 if ((simView.getxClick() >= intersection.getX()
@@ -476,7 +476,7 @@ public class TrafficSimulationController {
             intersection.setBounds(simView.getxClick(), simView.getyClick(),
                     TrafficSimulationView.INTERSECTION_SIZE,
                     TrafficSimulationView.INTERSECTION_SIZE);
-            simView.getIntersectionButtons().add(intersection);
+            simView.getIntersections().add(intersection);
 //            simView.getPanelSimulation().add(intersection);
 
             simView.getPanelSimulation().repaint();
@@ -492,7 +492,7 @@ public class TrafficSimulationController {
         public void actionPerformed(ActionEvent e) {
 
             // Add traffic lights to intersections
-            for (Intersection intersection : simView.getIntersectionButtons()) {
+            for (Intersection intersection : simView.getIntersections()) {
                 // NORTH
 //                if (intersection.getSegmentNorthIn() != null) {
                 JTextField trafficLight = new JTextField();

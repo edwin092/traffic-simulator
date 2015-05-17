@@ -6,7 +6,7 @@ import com.utcn.models.Vehicle;
 
 public abstract class VehicleGenerator {
 
-    private static int currentId;
+    public static int currentId;
     protected int counter;
 
     public VehicleGenerator() {

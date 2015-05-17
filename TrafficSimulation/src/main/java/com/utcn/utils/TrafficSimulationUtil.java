@@ -198,7 +198,7 @@ public class TrafficSimulationUtil {
     public static SimulationGraph convertSimulaionEnvironmentToGraph(TrafficSimulationView view) {
         SimulationGraph simulationGraph = new SimulationGraph();
 
-        for (Intersection intersection : view.getIntersectionButtons()) {
+        for (Intersection intersection : view.getIntersections()) {
             if (intersection.getSegmentNorthOut() != null) {
                 simulationGraph.addEdge(intersection.getId(), intersection.getSegmentNorthOut().getIntersectionOut().getId());
             }
