@@ -12,6 +12,7 @@ import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
@@ -20,7 +21,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -34,7 +37,7 @@ public class TrafficSimulationView {
 
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
-    public static final int TRAFFIC_LIGHT_SIZE = 5;
+    public static final int TRAFFIC_LIGHT_SIZE = 10;
     public static final int SIMULATION_STEP_DEFAULT = 1;
     public static final int SIMULATION_TIME_DEFAULT = 200;
     public static final int GRID_SIZE_METERS = 500;
@@ -76,11 +79,15 @@ public class TrafficSimulationView {
     private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
 
-//
-//    @JsonIgnore
-//    private List<JLabel> labels;
-
-//    private BufferedImage image;
+    // arrows images for traffic lights
+    private BufferedImage arrowGreenLeft;
+    private BufferedImage arrowGreenUp;
+    private BufferedImage arrowGreenRight;
+    private BufferedImage arrowGreenDown;
+    private BufferedImage arrowRedLeft;
+    private BufferedImage arrowRedUp;
+    private BufferedImage arrowRedRight;
+    private BufferedImage arrowRedDown;
 
     /**
      * Launch the application.
@@ -111,6 +118,9 @@ public class TrafficSimulationView {
         frame.setBounds(100, 100, 1337, 815);
         frame.setTitle("Traffic Simulation");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // loads all arrow images from the 'arrows' folder
+        loadAllArrowImages();
 
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
@@ -390,14 +400,11 @@ public class TrafficSimulationView {
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
-//                g.drawImage(image, 0, 0, null);
-
-//                JLabel picLabel = new JLabel(new ImageIcon(image));
-//                picLabel.setBounds(5, 5, 10, 10);
-//                this.add(picLabel);
 
                 createGridForSimulation(g, this.getWidth(), this.getHeight());
-                addTrafficLightsToSimulation();
+
+                addArrowTrafficLightsToSimulation();
+//                addTrafficLightsToSimulation();
 
                 for (Intersection intersection : intersections) {
 
@@ -437,12 +444,6 @@ public class TrafficSimulationView {
                 }
             }
         };
-
-//        try {
-//            image = ImageIO.read(new File("C:\\Users\\edWin\\Desktop\\photo.jpg"));
-//        } catch (IOException ex) {
-//            // handle exception...
-//        }
 
 
         scrollPaneSimulation.setViewportView(panelSimulation);
@@ -502,6 +503,28 @@ public class TrafficSimulationView {
         lblConfigFileText.setText(NO_CONFIG_FILE_MSG);
         lblConfigFileText.setForeground(Color.RED);
     }
+
+    /**
+     * Loads all arrow images for traffic lights.
+     */
+    private void loadAllArrowImages() {
+        try {
+            arrowGreenLeft = ImageIO.read(new File("arrows\\arrow-green-left.png"));
+            arrowGreenUp = ImageIO.read(new File("arrows\\arrow-green-up.png"));
+            arrowGreenRight = ImageIO.read(new File("arrows\\arrow-green-right.png"));
+            arrowGreenDown = ImageIO.read(new File("arrows\\arrow-green-down.png"));
+            arrowRedLeft = ImageIO.read(new File("arrows\\arrow-red-left.png"));
+            arrowRedUp = ImageIO.read(new File("arrows\\arrow-red-up.png"));
+            arrowRedRight = ImageIO.read(new File("arrows\\arrow-red-right.png"));
+            arrowRedDown = ImageIO.read(new File("arrows\\arrow-red-down.png"));
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(frame,
+                    "Please make sure that the \"arrows\" folder exists and all the images are present!",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 
     /**
      * Save current x, y coordinates for the polylines.
@@ -779,9 +802,147 @@ public class TrafficSimulationView {
     }
 
     /**
-     * Adds traffic lights to the simulation panel.
+     * Adds traffic lights to the simulation panel. The traffic lights are represented by arrows.
      */
-    private void addTrafficLightsToSimulation() {
+    private void addArrowTrafficLightsToSimulation() {
+        // Add traffic lights to intersections
+        for (Intersection intersection : getIntersections()) {
+            // NORTH
+            // LEFT
+            JLabel trafficLightLeft =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[0] ? arrowGreenLeft : arrowRedLeft));
+            trafficLightLeft.setBounds(intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    intersection.getY() + 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLightLeft);
+            panelSimulation.setComponentZOrder(trafficLightLeft, 0);
+            // STRAIGHT
+            JLabel trafficLightStraight =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[1] ? arrowGreenDown : arrowRedDown));
+            trafficLightStraight.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                    intersection.getY() + 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLightStraight);
+            panelSimulation.setComponentZOrder(trafficLightStraight, 0);
+            // RIGHT
+            JLabel trafficLightRight =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[2] ? arrowGreenRight : arrowRedRight));
+            trafficLightRight.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    intersection.getY() + 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLightRight);
+            panelSimulation.setComponentZOrder(trafficLightRight, 0);
+
+            // SOUTH
+            // LEFT
+            JLabel trafficLight2Left =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[0] ? arrowGreenLeft : arrowRedLeft));
+            trafficLight2Left.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight2Left);
+            panelSimulation.setComponentZOrder(trafficLight2Left, 0);
+            // STRAIGHT
+            JLabel trafficLight2Straight =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[1] ? arrowGreenUp : arrowRedUp));
+            trafficLight2Straight.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight2Straight);
+            panelSimulation.setComponentZOrder(trafficLight2Straight, 0);
+            // RIGHT
+            JLabel trafficLight2Right =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[2] ? arrowGreenRight : arrowRedRight));
+            trafficLight2Right.setBounds(
+                    intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight2Right);
+            panelSimulation.setComponentZOrder(trafficLight2Right, 0);
+
+            // VEST
+            // LEFT
+            JLabel trafficLight3Left =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[0] ? arrowGreenUp : arrowRedUp));
+            trafficLight3Left.setBounds(
+                    intersection.getX() + 1,
+                    intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight3Left);
+            panelSimulation.setComponentZOrder(trafficLight3Left, 0);
+            // STRAIGHT
+            JLabel trafficLight3Straight =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[1] ? arrowGreenRight : arrowRedRight));
+            trafficLight3Straight.setBounds(
+                    intersection.getX() + 1,
+                    intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight3Straight);
+            panelSimulation.setComponentZOrder(trafficLight3Straight, 0);
+            // RIGHT
+            JLabel trafficLight3Right =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[2] ? arrowGreenDown : arrowRedDown));
+            trafficLight3Right.setBounds(
+                    intersection.getX() + 1,
+                    intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight3Right);
+            panelSimulation.setComponentZOrder(trafficLight3Right, 0);
+
+            // EAST
+            // LEFT
+            JLabel trafficLight4Left =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[0] ? arrowGreenDown : arrowRedDown));
+            trafficLight4Left.setBounds(
+                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
+                    intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight4Left);
+            panelSimulation.setComponentZOrder(trafficLight4Left, 0);
+            // STRAIGHT
+            JLabel trafficLight4Straight =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[1] ? arrowGreenLeft : arrowRedLeft));
+            trafficLight4Straight.setBounds(
+                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
+                    intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight4Straight);
+            panelSimulation.setComponentZOrder(trafficLight4Straight, 0);
+            // RIGHT
+            JLabel trafficLight4Right =
+                    new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[2] ? arrowGreenUp : arrowRedUp));
+            trafficLight4Right.setBounds(
+                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
+                    intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    TRAFFIC_LIGHT_SIZE,
+                    TRAFFIC_LIGHT_SIZE);
+            panelSimulation.add(trafficLight4Right);
+            panelSimulation.setComponentZOrder(trafficLight4Right, 0);
+
+        }
+    }
+
+    /**
+     * Adds traffic lights to the simulation panel.
+     *
+     * @deprecated
+     */
+    private void addBoxTrafficLightsToSimulation() {
         // Add traffic lights to intersections
         for (Intersection intersection : getIntersections()) {
             // NORTH
@@ -908,7 +1069,7 @@ public class TrafficSimulationView {
             trafficLight4Left.setEditable(false);
             trafficLight4Left.setBounds(
                     intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE,
-                    intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                    intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
                     TRAFFIC_LIGHT_SIZE,
                     TRAFFIC_LIGHT_SIZE);
 
@@ -932,7 +1093,7 @@ public class TrafficSimulationView {
             trafficLight4Right.setEditable(false);
             trafficLight4Right.setBounds(
                     intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE,
-                    intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                    intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
                     TRAFFIC_LIGHT_SIZE,
                     TRAFFIC_LIGHT_SIZE);
 
