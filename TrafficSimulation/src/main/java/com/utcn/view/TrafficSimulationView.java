@@ -179,6 +179,7 @@ public class TrafficSimulationView {
         menuBar.add(mnSimulation);
 
         JMenuItem newSimMenuItem = new JMenuItem("New");
+        newSimMenuItem.setToolTipText("Create a new simulation. Reset current environment.");
         newSimMenuItem.addActionListener(new ActionListener() {
             public synchronized void actionPerformed(ActionEvent e) {
                 isSimulationPaused = true;
@@ -194,6 +195,7 @@ public class TrafficSimulationView {
         mnSimulation.add(newSimMenuItem);
 
         JMenuItem generateConfigMenuItem = new JMenuItem("Generate config file");
+        generateConfigMenuItem.setToolTipText("Create a JSON config file for traffic flows.");
         generateConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new TrafficFlowGeneratorView(currentIntersId - 1).setVisible(true);
@@ -202,6 +204,7 @@ public class TrafficSimulationView {
         mnSimulation.add(generateConfigMenuItem);
 
         JMenuItem addConfigMenuItem = new JMenuItem("Add config file");
+        addConfigMenuItem.setToolTipText("Add a JSON file containing traffic flows.");
         addConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
