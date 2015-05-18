@@ -58,8 +58,8 @@ public class EnvironmentSetup {
 //        intersection.setPhases(2);
 //        intersection.setTrafficLightEast(true);
 //
-//        seg1.setIntersectionIn(intersection);
-//        seg2.setIntersectionOut(intersection);
+//        seg1.setIntersectionFrom(intersection);
+//        seg2.setIntersectionTo(intersection);
 //        intersection.setSegmentEastIn(seg1);
 //        intersection.setSegmentVestOut(seg2);
 //
@@ -150,8 +150,8 @@ public class EnvironmentSetup {
             List<Segment> routeList = new ArrayList<>();
             for (int i = 0; i < intersectionIdsSolution.size() - 1; i++) {
                 for (Segment segment : segments) {
-                    if (segment.getIntersectionIn().getId() == intersectionIdsSolution.get(i) &&
-                            segment.getIntersectionOut().getId() == intersectionIdsSolution.get(i + 1)) {
+                    if (segment.getIntersectionFrom().getId() == intersectionIdsSolution.get(i) &&
+                            segment.getIntersectionTo().getId() == intersectionIdsSolution.get(i + 1)) {
                         routeList.add(segment);
                         break;
                     }
@@ -263,7 +263,7 @@ public class EnvironmentSetup {
 
                         // get direction of next segment (0-left, 1-straight,
                         // 2-right)
-                        int dir = seg.getIntersectionOut().getDirection(seg,
+                        int dir = seg.getIntersectionTo().getDirection(seg,
                                 nextSegment);
 
                         if (trafficLights[dir]) {
@@ -398,7 +398,7 @@ public class EnvironmentSetup {
                     // last vehicle -> first generated
                     if (segmentVehicles.get(0).getCurrentDistance() == seg
                             .getLength()) {
-                        if (seg.getIntersectionOut() == null) {
+                        if (seg.getIntersectionTo() == null) {
 
                             // am ajuns la dest
                             seg.getVehicles().remove(segmentVehicles.get(0));
@@ -406,7 +406,7 @@ public class EnvironmentSetup {
                             vehDest++;
                         } else {
                             // semafor verde
-                            if (seg.getIntersectionOut().isTrafficLightVest()) {
+                            if (seg.getIntersectionTo().isTrafficLightVest()) {
 
                                 Segment nextSegment = segmentVehicles
                                         .get(0)
@@ -551,7 +551,7 @@ public class EnvironmentSetup {
 //                        // last vehicle -> first generated
 //                        if (segmentVehicles.get(0).getCurrentDistance() == seg
 //                                .getLength()) {
-//                            if (seg.getIntersectionOut() == null) {
+//                            if (seg.getIntersectionTo() == null) {
 //
 //                                // am ajuns la dest
 //                                seg.getVehicles()
@@ -560,7 +560,7 @@ public class EnvironmentSetup {
 //                                vehDest++;
 //                            } else {
 //                                // semafor verde
-//                                if (seg.getIntersectionOut()
+//                                if (seg.getIntersectionTo()
 //                                        .isTrafficLightVest()) {
 //
 //                                    Segment nextSegment = segmentVehicles

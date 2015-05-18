@@ -53,8 +53,8 @@ public class ImportExportHelper {
             CustomImportExportClass.CustomSegment customSegment = new CustomImportExportClass.CustomSegment();
 
             customSegment.setId(segment.getId());
-            customSegment.setIntersectionInId(segment.getIntersectionIn().getId());
-            customSegment.setIntersectionOutId(segment.getIntersectionOut().getId());
+            customSegment.setIntersectionInId(segment.getIntersectionFrom().getId());
+            customSegment.setIntersectionOutId(segment.getIntersectionTo().getId());
 
             customImportExportClass.getSegments().add(customSegment);
         }
@@ -114,9 +114,9 @@ public class ImportExportHelper {
 
             for (Intersection intersection : view.getIntersections()) {
                 if (customSegment.getIntersectionInId() == intersection.getId()) {
-                    segment.setIntersectionIn(intersection);
+                    segment.setIntersectionFrom(intersection);
                 } else if (customSegment.getIntersectionOutId() == intersection.getId()) {
-                    segment.setIntersectionOut(intersection);
+                    segment.setIntersectionTo(intersection);
                 }
             }
 

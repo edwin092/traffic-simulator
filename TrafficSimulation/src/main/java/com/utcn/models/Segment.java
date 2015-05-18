@@ -7,15 +7,13 @@ import java.util.List;
 
 public class Segment {
 
-    // private static final long serialVersionUID = 1L;
-
     private int id;
 
     private List<Vehicle> vehicles;
     private int length = 20;
-    // legatura intersectii
-    private Intersection intersectionIn;
-    private Intersection intersectionOut;
+    // segment intersections
+    private Intersection intersectionFrom;
+    private Intersection intersectionTo;
 
     // If way = true then [Intersection ->] else [-> Intersection]
     private boolean way;
@@ -59,20 +57,20 @@ public class Segment {
         this.length = length;
     }
 
-    public Intersection getIntersectionIn() {
-        return intersectionIn;
+    public Intersection getIntersectionFrom() {
+        return intersectionFrom;
     }
 
-    public void setIntersectionIn(Intersection intersectionIn) {
-        this.intersectionIn = intersectionIn;
+    public void setIntersectionFrom(Intersection intersectionFrom) {
+        this.intersectionFrom = intersectionFrom;
     }
 
-    public Intersection getIntersectionOut() {
-        return intersectionOut;
+    public Intersection getIntersectionTo() {
+        return intersectionTo;
     }
 
-    public void setIntersectionOut(Intersection intersectionOut) {
-        this.intersectionOut = intersectionOut;
+    public void setIntersectionTo(Intersection intersectionTo) {
+        this.intersectionTo = intersectionTo;
     }
 
     public boolean isWay() {
@@ -119,22 +117,22 @@ public class Segment {
      */
     public boolean[] getTrafficLights() {
 
-        if (intersectionOut != null) {
-            if ((intersectionOut.getSegmentNorthIn() != null && intersectionOut.getSegmentNorthIn().getId() == this.id)
-                    || (intersectionOut.getSegmentNorthOut() != null && intersectionOut.getSegmentNorthOut().getId() == this.id)) {
+        if (intersectionTo != null) {
+            if ((intersectionTo.getSegmentNorthIn() != null && intersectionTo.getSegmentNorthIn().getId() == this.id)
+                    || (intersectionTo.getSegmentNorthOut() != null && intersectionTo.getSegmentNorthOut().getId() == this.id)) {
                 // NORTH
-                return intersectionOut.getTrafficLightsNorth();
-            } else if ((intersectionOut.getSegmentSouthIn() != null && intersectionOut.getSegmentSouthIn().getId() == this.id)
-                    || (intersectionOut.getSegmentSouthOut() != null && intersectionOut.getSegmentSouthOut().getId() == this.id)) {
+                return intersectionTo.getTrafficLightsNorth();
+            } else if ((intersectionTo.getSegmentSouthIn() != null && intersectionTo.getSegmentSouthIn().getId() == this.id)
+                    || (intersectionTo.getSegmentSouthOut() != null && intersectionTo.getSegmentSouthOut().getId() == this.id)) {
                 // SOUTH
-                return intersectionOut.getTrafficLightsSouth();
-            } else if ((intersectionOut.getSegmentEastIn() != null && intersectionOut.getSegmentEastIn().getId() == this.id)
-                    || (intersectionOut.getSegmentEastOut() != null && intersectionOut.getSegmentEastOut().getId() == this.id)) {
+                return intersectionTo.getTrafficLightsSouth();
+            } else if ((intersectionTo.getSegmentEastIn() != null && intersectionTo.getSegmentEastIn().getId() == this.id)
+                    || (intersectionTo.getSegmentEastOut() != null && intersectionTo.getSegmentEastOut().getId() == this.id)) {
                 // EAST
-                return intersectionOut.getTrafficLightsEast();
+                return intersectionTo.getTrafficLightsEast();
             } else {
                 // VEST
-                return intersectionOut.getTrafficLightsVest();
+                return intersectionTo.getTrafficLightsVest();
             }
         }
         return null;

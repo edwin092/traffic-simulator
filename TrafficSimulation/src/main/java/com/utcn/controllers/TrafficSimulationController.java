@@ -179,7 +179,7 @@ public class TrafficSimulationController {
                         // save coordinates
                         simView.saveXYValues(firstX, firstY);
                     } else if (firstSelectedIntersection != null
-                            && intersection.getSegmentNorthOut() == null) {
+                            && intersection.getSegmentNorthIn() == null) {
                         // starting intersection has already been selected
 
                         // create new segment
@@ -189,8 +189,8 @@ public class TrafficSimulationController {
                         simView.incrementCurrentSegId();
 
                         // set segment intersections
-                        segment.setIntersectionIn(firstSelectedIntersection);
-                        segment.setIntersectionOut(intersection);
+                        segment.setIntersectionFrom(firstSelectedIntersection);
+                        segment.setIntersectionTo(intersection);
 
                         // set segment end point
                         int finalX = intersection.getX()
@@ -261,8 +261,8 @@ public class TrafficSimulationController {
                         simView.incrementCurrentSegId();
 
                         // set segment intersections
-                        segment.setIntersectionIn(firstSelectedIntersection);
-                        segment.setIntersectionOut(intersection);
+                        segment.setIntersectionFrom(firstSelectedIntersection);
+                        segment.setIntersectionTo(intersection);
 
                         // set segment end point
                         int finalX = intersection.getX()
@@ -332,8 +332,8 @@ public class TrafficSimulationController {
                         simView.incrementCurrentSegId();
 
                         // set segment intersections
-                        segment.setIntersectionIn(firstSelectedIntersection);
-                        segment.setIntersectionOut(intersection);
+                        segment.setIntersectionFrom(firstSelectedIntersection);
+                        segment.setIntersectionTo(intersection);
 
                         // set segment end point
                         int finalX = intersection.getX();
@@ -405,8 +405,8 @@ public class TrafficSimulationController {
                         simView.incrementCurrentSegId();
 
                         // set segment intersections
-                        segment.setIntersectionIn(firstSelectedIntersection);
-                        segment.setIntersectionOut(intersection);
+                        segment.setIntersectionFrom(firstSelectedIntersection);
+                        segment.setIntersectionTo(intersection);
 
                         // set segment end point
                         int finalX = intersection.getX()

@@ -200,16 +200,16 @@ public class TrafficSimulationUtil {
 
         for (Intersection intersection : view.getIntersections()) {
             if (intersection.getSegmentNorthOut() != null) {
-                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentNorthOut().getIntersectionOut().getId());
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentNorthOut().getIntersectionTo().getId());
             }
             if (intersection.getSegmentSouthOut() != null) {
-                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentSouthOut().getIntersectionOut().getId());
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentSouthOut().getIntersectionTo().getId());
             }
             if (intersection.getSegmentEastOut() != null) {
-                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentEastOut().getIntersectionOut().getId());
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentEastOut().getIntersectionTo().getId());
             }
             if (intersection.getSegmentVestOut() != null) {
-                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentVestOut().getIntersectionOut().getId());
+                simulationGraph.addEdge(intersection.getId(), intersection.getSegmentVestOut().getIntersectionTo().getId());
             }
         }
 
