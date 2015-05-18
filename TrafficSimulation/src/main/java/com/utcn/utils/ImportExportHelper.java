@@ -40,8 +40,8 @@ public class ImportExportHelper {
             customIntersection.setSegmentVestOutId(intersection.getSegmentVestOut() != null ? intersection.getSegmentVestOut().getId() : 0);
             customIntersection.setSegmentSouthInId(intersection.getSegmentSouthIn() != null ? intersection.getSegmentSouthIn().getId() : 0);
             customIntersection.setSegmentSouthOutId(intersection.getSegmentSouthOut() != null ? intersection.getSegmentSouthOut().getId() : 0);
-            customIntersection.setSegmentNorthOutId(intersection.getSegmentNorthIn() != null ? intersection.getSegmentNorthIn().getId() : 0);
-            customIntersection.setSegmentNorthInId(intersection.getSegmentNorthOut() != null ? intersection.getSegmentNorthOut().getId() : 0);
+            customIntersection.setSegmentNorthInId(intersection.getSegmentNorthIn() != null ? intersection.getSegmentNorthIn().getId() : 0);
+            customIntersection.setSegmentNorthOutId(intersection.getSegmentNorthOut() != null ? intersection.getSegmentNorthOut().getId() : 0);
 
             customIntersection.setX(intersection.getX());
             customIntersection.setY(intersection.getY());
