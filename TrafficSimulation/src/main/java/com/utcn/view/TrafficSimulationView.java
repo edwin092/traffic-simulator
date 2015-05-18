@@ -18,9 +18,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -305,7 +303,7 @@ public class TrafficSimulationView {
         });
         mnComponents.add(mntmClear);
 
-        JMenuItem mntmSegment = new JMenuItem("Segment");
+        final JMenuItem mntmSegment = new JMenuItem("Segment");
         mntmSegment.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 isSegmentSelected = true;
@@ -315,11 +313,17 @@ public class TrafficSimulationView {
         });
         mnComponents.add(mntmSegment);
 
-        JMenuItem mntmIntersection = new JMenuItem("Intersection");
-        mntmIntersection.addActionListener(new ActionListener() {
+        final JCheckBoxMenuItem mntmIntersection = new JCheckBoxMenuItem("Intersection");
+        mntmIntersection.addItemListener(new ItemListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                isIntersectionSelected = true;
+            public void itemStateChanged(ItemEvent e) {
+                if (mntmIntersection.isSelected()) {
+                    isIntersectionSelected = true;
+                    mntmSegment.setEnabled(false);
+                } else {
+                    isIntersectionSelected = false;
+                    mntmSegment.setEnabled(true);
+                }
             }
         });
         mnComponents.add(mntmIntersection);
@@ -400,28 +404,81 @@ public class TrafficSimulationView {
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
-
+                // colors
+                Color blackLineColor = new Color(0, 0, 0);
+                Color redLineColor = new Color(255, 0, 0);
+                Color grayLineColor = new Color(0, 0, 0, 0.2f);
+                // create grid
                 createGridForSimulation(g, this.getWidth(), this.getHeight());
-
+                // add traffic lights
                 addArrowTrafficLightsToSimulation();
-//                addTrafficLightsToSimulation();
-
+                // add intersections
                 for (Intersection intersection : intersections) {
-
                     this.add(intersection);
+                    // show intersections segments click zones
+                    if (isSegmentSelected) {
 
+                        // NORTH
+                        if (intersection.isSegmentNorthSelected()) {
+                            g.setColor(redLineColor);
+                        } else {
+                            g.setColor(grayLineColor);
+                        }
+                        g.drawLine(intersection.getX(), intersection.getY(),
+                                intersection.getX(), intersection.getY() - INTERSECTION_CLICK_SIZE);
+                        g.drawLine(intersection.getX(), intersection.getY() - INTERSECTION_CLICK_SIZE,
+                                intersection.getX() + intersection.getWidth(), intersection.getY() - INTERSECTION_CLICK_SIZE);
+                        g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY() - INTERSECTION_CLICK_SIZE,
+                                intersection.getX() + intersection.getWidth(), intersection.getY());
+                        // SOUTH
+                        if (intersection.isSegmentSouthSelected()) {
+                            g.setColor(redLineColor);
+                        } else {
+                            g.setColor(grayLineColor);
+                        }
+                        g.drawLine(intersection.getX(), intersection.getY() + intersection.getHeight(),
+                                intersection.getX(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE);
+                        g.drawLine(intersection.getX(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE,
+                                intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE);
+                        g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE,
+                                intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight());
+                        // VEST
+                        if (intersection.isSegmentVestSelected()) {
+                            g.setColor(redLineColor);
+                        } else {
+                            g.setColor(grayLineColor);
+                        }
+                        g.drawLine(intersection.getX(), intersection.getY(),
+                                intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY());
+                        g.drawLine(intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY(),
+                                intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight());
+                        g.drawLine(intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight(),
+                                intersection.getX(), intersection.getY() + intersection.getHeight());
+                        //EAST
+                        if (intersection.isSegmentEastSelected()) {
+                            g.setColor(redLineColor);
+                        } else {
+                            g.setColor(grayLineColor);
+                        }
+                        g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY(),
+                                intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY());
+                        g.drawLine(intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY(),
+                                intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight());
+                        g.drawLine(intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight(),
+                                intersection.getX(), intersection.getY() + intersection.getHeight());
+                    }
+
+                    // id of intersection
                     JLabel lab = new JLabel(String.valueOf(intersection.getId()));
-
                     int labX = intersection.getX() + INTERSECTION_SIZE / 2 - 7;
                     int labY = intersection.getY() + INTERSECTION_SIZE / 2 - 7;
-
                     lab.setBounds(labX, labY, 15, 15);
                     panelSimulation.add(lab);
                     panelSimulation.setComponentZOrder(lab, 0);
 
 //                    panelSimulation.setComponentZOrder(lab, 1);
                 }
-
+                // draw vehicles
                 if (vehicleLabels != null) {
                     for (JLabel label : vehicleLabels) {
                         this.add(label);
@@ -429,8 +486,7 @@ public class TrafficSimulationView {
                     }
                 }
 
-                Color lineColor = new Color(0, 0, 0, 1f);
-                g.setColor(lineColor);
+                g.setColor(blackLineColor);
 
                 for (Integer key : segmentCoordsX.keySet()) {
                     List<Integer> xCoords = segmentCoordsX.get(key);
@@ -751,6 +807,8 @@ public class TrafficSimulationView {
                 environmentSetup.checkSegments(vehDest);
                 // manage intersections traffic lights
                 environmentSetup.manageIntersectionsTrafficLights();
+                // increment counter
+                globalCounter++;
             }
 
             for (Segment segment : segments) {
@@ -789,7 +847,7 @@ public class TrafficSimulationView {
                 }
             }
 
-            globalCounter += simulationStep;
+//            globalCounter++;
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

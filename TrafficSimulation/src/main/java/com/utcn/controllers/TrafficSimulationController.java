@@ -1,9 +1,9 @@
 package com.utcn.controllers;
 
-import com.utcn.view.TrafficSimulationView;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.utils.TrafficSimulationUtil;
+import com.utcn.view.TrafficSimulationView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,7 +71,6 @@ public class TrafficSimulationController {
                 checkIntersectionClick();
 
                 simView.getPanelSimulation().repaint();
-                simView.setIntersectionSelected(false);
             }
         }
 
