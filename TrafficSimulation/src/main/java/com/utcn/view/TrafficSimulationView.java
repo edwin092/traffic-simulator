@@ -403,100 +403,104 @@ public class TrafficSimulationView {
         panelSimulation = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                // colors
-                Color blackLineColor = new Color(0, 0, 0);
-                Color redLineColor = new Color(255, 0, 0);
-                Color grayLineColor = new Color(0, 0, 0, 0.2f);
-                // create grid
-                createGridForSimulation(g, this.getWidth(), this.getHeight());
-                // add traffic lights
-                addArrowTrafficLightsToSimulation();
-                // add intersections
-                for (Intersection intersection : intersections) {
-                    this.add(intersection);
-                    // show intersections segments click zones
-                    if (isSegmentSelected) {
+                try {
+                    super.paintComponent(g);
+                    // colors
+                    Color blackLineColor = new Color(0, 0, 0);
+                    Color redLineColor = new Color(255, 0, 0);
+                    Color grayLineColor = new Color(0, 0, 0, 0.2f);
+                    // create grid
+                    createGridForSimulation(g, this.getWidth(), this.getHeight());
+                    // add traffic lights
+                    addArrowTrafficLightsToSimulation();
+                    // add intersections
+                    for (Intersection intersection : intersections) {
+                        this.add(intersection);
+                        // show intersections segments click zones
+                        if (isSegmentSelected) {
 
-                        // NORTH
-                        if (intersection.isSegmentNorthSelected()) {
-                            g.setColor(redLineColor);
-                        } else {
-                            g.setColor(grayLineColor);
+                            // NORTH
+                            if (intersection.isSegmentNorthSelected()) {
+                                g.setColor(redLineColor);
+                            } else {
+                                g.setColor(grayLineColor);
+                            }
+                            g.drawLine(intersection.getX(), intersection.getY(),
+                                    intersection.getX(), intersection.getY() - INTERSECTION_CLICK_SIZE);
+                            g.drawLine(intersection.getX(), intersection.getY() - INTERSECTION_CLICK_SIZE,
+                                    intersection.getX() + intersection.getWidth(), intersection.getY() - INTERSECTION_CLICK_SIZE);
+                            g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY() - INTERSECTION_CLICK_SIZE,
+                                    intersection.getX() + intersection.getWidth(), intersection.getY());
+                            // SOUTH
+                            if (intersection.isSegmentSouthSelected()) {
+                                g.setColor(redLineColor);
+                            } else {
+                                g.setColor(grayLineColor);
+                            }
+                            g.drawLine(intersection.getX(), intersection.getY() + intersection.getHeight(),
+                                    intersection.getX(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE);
+                            g.drawLine(intersection.getX(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE,
+                                    intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE);
+                            g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE,
+                                    intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight());
+                            // VEST
+                            if (intersection.isSegmentVestSelected()) {
+                                g.setColor(redLineColor);
+                            } else {
+                                g.setColor(grayLineColor);
+                            }
+                            g.drawLine(intersection.getX(), intersection.getY(),
+                                    intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY());
+                            g.drawLine(intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY(),
+                                    intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight());
+                            g.drawLine(intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight(),
+                                    intersection.getX(), intersection.getY() + intersection.getHeight());
+                            //EAST
+                            if (intersection.isSegmentEastSelected()) {
+                                g.setColor(redLineColor);
+                            } else {
+                                g.setColor(grayLineColor);
+                            }
+                            g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY(),
+                                    intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY());
+                            g.drawLine(intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY(),
+                                    intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight());
+                            g.drawLine(intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight(),
+                                    intersection.getX(), intersection.getY() + intersection.getHeight());
                         }
-                        g.drawLine(intersection.getX(), intersection.getY(),
-                                intersection.getX(), intersection.getY() - INTERSECTION_CLICK_SIZE);
-                        g.drawLine(intersection.getX(), intersection.getY() - INTERSECTION_CLICK_SIZE,
-                                intersection.getX() + intersection.getWidth(), intersection.getY() - INTERSECTION_CLICK_SIZE);
-                        g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY() - INTERSECTION_CLICK_SIZE,
-                                intersection.getX() + intersection.getWidth(), intersection.getY());
-                        // SOUTH
-                        if (intersection.isSegmentSouthSelected()) {
-                            g.setColor(redLineColor);
-                        } else {
-                            g.setColor(grayLineColor);
-                        }
-                        g.drawLine(intersection.getX(), intersection.getY() + intersection.getHeight(),
-                                intersection.getX(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE);
-                        g.drawLine(intersection.getX(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE,
-                                intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE);
-                        g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight() + INTERSECTION_CLICK_SIZE,
-                                intersection.getX() + intersection.getWidth(), intersection.getY() + intersection.getHeight());
-                        // VEST
-                        if (intersection.isSegmentVestSelected()) {
-                            g.setColor(redLineColor);
-                        } else {
-                            g.setColor(grayLineColor);
-                        }
-                        g.drawLine(intersection.getX(), intersection.getY(),
-                                intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY());
-                        g.drawLine(intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY(),
-                                intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight());
-                        g.drawLine(intersection.getX() - INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight(),
-                                intersection.getX(), intersection.getY() + intersection.getHeight());
-                        //EAST
-                        if (intersection.isSegmentEastSelected()) {
-                            g.setColor(redLineColor);
-                        } else {
-                            g.setColor(grayLineColor);
-                        }
-                        g.drawLine(intersection.getX() + intersection.getWidth(), intersection.getY(),
-                                intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY());
-                        g.drawLine(intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY(),
-                                intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight());
-                        g.drawLine(intersection.getX() + intersection.getWidth() + INTERSECTION_CLICK_SIZE, intersection.getY() + intersection.getHeight(),
-                                intersection.getX(), intersection.getY() + intersection.getHeight());
-                    }
 
-                    // id of intersection
-                    JLabel lab = new JLabel(String.valueOf(intersection.getId()));
-                    int labX = intersection.getX() + INTERSECTION_SIZE / 2 - 7;
-                    int labY = intersection.getY() + INTERSECTION_SIZE / 2 - 7;
-                    lab.setBounds(labX, labY, 15, 15);
-                    panelSimulation.add(lab);
-                    panelSimulation.setComponentZOrder(lab, 0);
+                        // id of intersection
+                        JLabel lab = new JLabel(String.valueOf(intersection.getId()));
+                        int labX = intersection.getX() + INTERSECTION_SIZE / 2 - 7;
+                        int labY = intersection.getY() + INTERSECTION_SIZE / 2 - 7;
+                        lab.setBounds(labX, labY, 15, 15);
+                        panelSimulation.add(lab);
+                        panelSimulation.setComponentZOrder(lab, 0);
 
 //                    panelSimulation.setComponentZOrder(lab, 1);
-                }
-                // draw vehicles
-                if (vehicleLabels != null) {
-                    for (JLabel label : vehicleLabels) {
-                        this.add(label);
-                        this.setComponentZOrder(label, 0);
                     }
-                }
+                    // draw vehicles
+                    if (vehicleLabels != null) {
+                        for (JLabel label : vehicleLabels) {
+                            this.add(label);
+                            this.setComponentZOrder(label, 0);
+                        }
+                    }
 
-                g.setColor(blackLineColor);
+                    g.setColor(blackLineColor);
 
-                for (Integer key : segmentCoordsX.keySet()) {
-                    List<Integer> xCoords = segmentCoordsX.get(key);
-                    List<Integer> yCoords = segmentCoordsY.get(key);
+                    for (Integer key : segmentCoordsX.keySet()) {
+                        List<Integer> xCoords = segmentCoordsX.get(key);
+                        List<Integer> yCoords = segmentCoordsY.get(key);
 
-                    int[] x = TrafficSimulationUtil.convertList(xCoords);
-                    int[] y = TrafficSimulationUtil.convertList(yCoords);
+                        int[] x = TrafficSimulationUtil.convertList(xCoords);
+                        int[] y = TrafficSimulationUtil.convertList(yCoords);
 
-                    // draw polyline
-                    g.drawPolyline(x, y, x.length);
+                        // draw polyline
+                        g.drawPolyline(x, y, x.length);
+                    }
+                } catch (IllegalArgumentException e) {
+                    // do nothing
                 }
             }
         };
