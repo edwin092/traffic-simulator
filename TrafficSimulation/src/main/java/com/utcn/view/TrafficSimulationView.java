@@ -2,15 +2,24 @@ package com.utcn.view;
 
 import com.utcn.bl.EnvironmentSetup;
 import com.utcn.bl.VehicleGenerator;
+import com.utcn.configurator.flow.model.TrafficFlow;
+import com.utcn.configurator.flow.view.TrafficFlowGeneratorView;
+import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
+import com.utcn.configurator.trafficlight.view.TrafficLightsConfiguratorView;
 import com.utcn.controllers.TrafficSimulationController;
-import com.utcn.flow.TrafficFlow;
 import com.utcn.models.Intersection;
+import com.utcn.models.IntersectionStatistics;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
 import com.utcn.optimization.TrafficLightsOptimization;
 import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -30,8 +39,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TrafficSimulationView {
 
-    public static final String NO_CONFIG_FILE_MSG = "No config file added";
-    public static final String CONFIG_FILE_LOADED_MSG = "Config file NAME added";
+    public static final String NO_FLOW_CONFIG_FILE_MSG = "No flow config file added";
+    public static final String FLOW_CONFIG_FILE_LOADED_MSG = "Flow config file NAME added";
+    public static final String NO_TL_CONFIG_FILE_MSG = "No traffic lights config file added";
+    public static final String TL_CONFIG_FILE_LOADED_MSG = "Traffic lights config file NAME added";
 
     public static final int INTERSECTION_SIZE = 60;
     public static final int INTERSECTION_CLICK_SIZE = 20;
@@ -64,7 +75,8 @@ public class TrafficSimulationView {
     private JLabel lblCounter;
     private JLabel lblStep;
     private JLabel lblSimulationTime;
-    private JLabel lblConfigFileText;
+    private JLabel lblFlowConfigFileText;
+    private JLabel lblTLConfigFileText;
     // components ids
     private int currentSegment = 1;
     private int currentSegId = 1;
@@ -73,6 +85,7 @@ public class TrafficSimulationView {
     private List<Intersection> intersections = new ArrayList<>();
     private List<Segment> segments = new ArrayList<>();
     private List<TrafficFlow> trafficFlows;
+    private List<TrafficLightPhases> trafficLightPhaseses;
 
     private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
@@ -202,18 +215,20 @@ public class TrafficSimulationView {
         });
         mnSimulation.add(newSimMenuItem);
 
-        JMenuItem generateConfigMenuItem = new JMenuItem("Generate config file");
-        generateConfigMenuItem.setToolTipText("Create a JSON config file for traffic flows.");
-        generateConfigMenuItem.addActionListener(new ActionListener() {
+        mnSimulation.addSeparator();
+
+        JMenuItem generateFlowConfigMenuItem = new JMenuItem("Generate flow config file");
+        generateFlowConfigMenuItem.setToolTipText("Create a JSON config file for traffic flows.");
+        generateFlowConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new TrafficFlowGeneratorView(currentIntersId - 1).setVisible(true);
             }
         });
-        mnSimulation.add(generateConfigMenuItem);
+        mnSimulation.add(generateFlowConfigMenuItem);
 
-        JMenuItem addConfigMenuItem = new JMenuItem("Add config file");
-        addConfigMenuItem.setToolTipText("Add a JSON file containing traffic flows.");
-        addConfigMenuItem.addActionListener(new ActionListener() {
+        JMenuItem addFlowConfigMenuItem = new JMenuItem("Add flow config file");
+        addFlowConfigMenuItem.setToolTipText("Add a JSON file containing traffic flows.");
+        addFlowConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
                 FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter(
@@ -226,8 +241,8 @@ public class TrafficSimulationView {
                     boolean res = ImportExportHelper.importFlowFromJSON(fc.getSelectedFile().getAbsolutePath(),
                             getTrafficSimulationViewInstance());
                     if (res) {
-                        lblConfigFileText.setText(CONFIG_FILE_LOADED_MSG.replace("NAME", fc.getSelectedFile().getName()));
-                        lblConfigFileText.setForeground(Color.BLUE);
+                        lblFlowConfigFileText.setText(FLOW_CONFIG_FILE_LOADED_MSG.replace("NAME", fc.getSelectedFile().getName()));
+                        lblFlowConfigFileText.setForeground(Color.BLUE);
                     } else {
                         JOptionPane.showMessageDialog(frame,
                                 "Import failed.",
@@ -237,7 +252,54 @@ public class TrafficSimulationView {
                 }
             }
         });
-        mnSimulation.add(addConfigMenuItem);
+        mnSimulation.add(addFlowConfigMenuItem);
+
+        mnSimulation.addSeparator();
+
+        JMenuItem generateTLConfigMenuItem = new JMenuItem("Generate traffic lights config file");
+        generateTLConfigMenuItem.setToolTipText("Create a JSON config file for traffic light phases.");
+        generateTLConfigMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                List<Integer> ids = new ArrayList<>();
+                for (Intersection intersection : intersections) {
+                    if (intersection.isFourPhased()) {
+                        ids.add(intersection.getId());
+                    }
+                }
+                new TrafficLightsConfiguratorView(TrafficSimulationUtil.convertList(ids)).setVisible(true);
+            }
+        });
+        mnSimulation.add(generateTLConfigMenuItem);
+
+        JMenuItem addTLConfigMenuItem = new JMenuItem("Add traffic lights config file");
+        addTLConfigMenuItem.setToolTipText("Add a JSON file containing traffic lights phases.");
+        addTLConfigMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fc = new JFileChooser();
+                FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter(
+                        "JSON files (*.json)", "json");
+                fc.setFileFilter(jsonFilter);
+                fc.setCurrentDirectory(new File("."));
+                fc.showOpenDialog(null);
+
+                if (fc.getSelectedFile() != null) {
+                    boolean res = ImportExportHelper.importFlowFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                            getTrafficSimulationViewInstance());
+                    if (res) {
+                        lblTLConfigFileText.setText(TL_CONFIG_FILE_LOADED_MSG.replace("NAME", fc.getSelectedFile().getName()));
+                        lblTLConfigFileText.setForeground(Color.BLUE);
+                    } else {
+                        JOptionPane.showMessageDialog(frame,
+                                "Import failed.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+        mnSimulation.add(addTLConfigMenuItem);
+
+        mnSimulation.addSeparator();
 
         startMenuItem = new JMenuItem("Start");
         startMenuItem.addActionListener(new ActionListener() {
@@ -327,6 +389,50 @@ public class TrafficSimulationView {
             }
         });
         mnComponents.add(mntmIntersection);
+
+        // Statistics Menu
+        JMenu mnStatistics = new JMenu("Statistics");
+        menuBar.add(mnStatistics);
+
+        JMenuItem mntmVehiclesInters = new JMenuItem("Vehicles per Intersection");
+        mntmVehiclesInters.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+                for (IntersectionStatistics intersectionStatistics :
+                        environmentSetup.getIntersectionStatisticsManager().getIntersectionStatisticsList()) {
+                    dataset.addValue(intersectionStatistics.getNumberOfVehPassed()
+                            , "Intersection " + intersectionStatistics.getIntersectionId(),
+                            "Number of vehicles");
+                }
+
+                JFreeChart barChart = ChartFactory.createBarChart(
+                        "The Number of vehicles that passed an intersection during " + simulationTime,
+                        "", "Number of vehicles",
+                        dataset, PlotOrientation.VERTICAL,
+                        true, true, false);
+
+                int width = 640; /* Width of the image */
+                int height = 480; /* Height of the image */
+                File BarChart = new File("BarChart.jpeg");
+                try {
+                    ChartUtilities.saveChartAsJPEG(BarChart, barChart, width, height);
+
+                    JLabel label = new JLabel(new ImageIcon("BarChart.jpeg"));
+                    JFrame f = new JFrame();
+                    f.setTitle("Vehicles per Intersection");
+                    f.getContentPane().add(label);
+                    f.pack();
+                    f.setLocation(200, 200);
+                    f.setVisible(true);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+        mnStatistics.add(mntmVehiclesInters);
+        // End Statistics Menu
 
         // Help Menu
         JMenu mnHelp = new JMenu("Help");
@@ -545,11 +651,17 @@ public class TrafficSimulationView {
         lblStep.setBounds(295, 4, 46, 22);
         frame.getContentPane().add(lblStep);
 
-        lblConfigFileText = new JLabel(NO_CONFIG_FILE_MSG);
-        lblConfigFileText.setFont(new Font("Tahoma", Font.BOLD, 11));
-        lblConfigFileText.setForeground(Color.RED);
-        lblConfigFileText.setBounds(340, 9, 153, 14);
-        frame.getContentPane().add(lblConfigFileText);
+        lblFlowConfigFileText = new JLabel(NO_FLOW_CONFIG_FILE_MSG);
+        lblFlowConfigFileText.setFont(new Font("Tahoma", Font.BOLD, 11));
+        lblFlowConfigFileText.setForeground(Color.RED);
+        lblFlowConfigFileText.setBounds(340, 9, 153, 14);
+        frame.getContentPane().add(lblFlowConfigFileText);
+
+        lblTLConfigFileText = new JLabel(NO_TL_CONFIG_FILE_MSG);
+        lblTLConfigFileText.setFont(new Font("Tahoma", Font.BOLD, 11));
+        lblTLConfigFileText.setForeground(Color.RED);
+        lblTLConfigFileText.setBounds(500, 9, 193, 14);
+        frame.getContentPane().add(lblTLConfigFileText);
     }
 
     /**
@@ -560,8 +672,11 @@ public class TrafficSimulationView {
         lblSimulationTime.setText("0");
         lblStep.setText("0");
 
-        lblConfigFileText.setText(NO_CONFIG_FILE_MSG);
-        lblConfigFileText.setForeground(Color.RED);
+        lblFlowConfigFileText.setText(NO_FLOW_CONFIG_FILE_MSG);
+        lblFlowConfigFileText.setForeground(Color.RED);
+
+        lblTLConfigFileText.setText(NO_TL_CONFIG_FILE_MSG);
+        lblTLConfigFileText.setForeground(Color.RED);
     }
 
     /**
@@ -729,7 +844,7 @@ public class TrafficSimulationView {
                 simulationStep = 5;
                 break;
             case 2:
-                simulationStep = SIMULATION_TIME_DEFAULT;
+                simulationStep = simulationTime;
                 break;
             default:
                 simulationStep = SIMULATION_STEP_DEFAULT;
@@ -737,12 +852,19 @@ public class TrafficSimulationView {
     }
 
     /**
-     *
+     * Set phases times and order for intersections.
      */
     private void setPhaseTimeAndOrderForIntersections() {
         for (Intersection intersection : intersections) {
             if (intersection.isFourPhased()) {
-                intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
+                for (TrafficLightPhases trafficLightPhases : trafficLightPhaseses) {
+                    if (trafficLightPhases.getIntersectionId() == intersection.getId()) {
+                        intersection.setPhaseTimes(new int[]{trafficLightPhases.getPhase1Time(),
+                                trafficLightPhases.getPhase2Time(), trafficLightPhases.getPhase3Time(),
+                                trafficLightPhases.getPhase4Time()});
+                    }
+                }
+//                intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
                 intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
 
                 TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
@@ -819,7 +941,13 @@ public class TrafficSimulationView {
 
                 for (Vehicle veh : segment.getVehicles()) {
 
-                    JLabel lblO = new JLabel(String.valueOf(veh.getId()));
+//                    JLabel lblO = new JLabel(String.valueOf(veh.getId()));
+                    JLabel lblO = new JLabel("O");
+                    // TODO move this into Vehicle entity
+                    lblO.setForeground(new Color(TrafficSimulationUtil.randInt(0, 255),
+                            TrafficSimulationUtil.randInt(0, 255),
+                            TrafficSimulationUtil.randInt(0, 255)));
+
 
                     int[] lineCoordsX = veh.getCurrentSegment()
                             .getLineCoordsX();
@@ -850,8 +978,6 @@ public class TrafficSimulationView {
                     }
                 }
             }
-
-//            globalCounter++;
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -869,132 +995,134 @@ public class TrafficSimulationView {
     private void addArrowTrafficLightsToSimulation() {
         // Add traffic lights to intersections
         for (Intersection intersection : getIntersections()) {
-            // NORTH
-            // LEFT
-            JLabel trafficLightLeft =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[0] ? arrowGreenLeft : arrowRedLeft));
-            trafficLightLeft.setBounds(intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
-                    intersection.getY() + 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLightLeft);
-            panelSimulation.setComponentZOrder(trafficLightLeft, 0);
-            // STRAIGHT
-            JLabel trafficLightStraight =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[1] ? arrowGreenDown : arrowRedDown));
-            trafficLightStraight.setBounds(
-                    intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
-                    intersection.getY() + 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLightStraight);
-            panelSimulation.setComponentZOrder(trafficLightStraight, 0);
-            // RIGHT
-            JLabel trafficLightRight =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[2] ? arrowGreenRight : arrowRedRight));
-            trafficLightRight.setBounds(
-                    intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
-                    intersection.getY() + 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLightRight);
-            panelSimulation.setComponentZOrder(trafficLightRight, 0);
+            if (intersection.getSegmentsNumber() > 4) {
+                // NORTH
+                // LEFT
+                JLabel trafficLightLeft =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[0] ? arrowGreenLeft : arrowRedLeft));
+                trafficLightLeft.setBounds(intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                        intersection.getY() + 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLightLeft);
+                panelSimulation.setComponentZOrder(trafficLightLeft, 0);
+                // STRAIGHT
+                JLabel trafficLightStraight =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[1] ? arrowGreenDown : arrowRedDown));
+                trafficLightStraight.setBounds(
+                        intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                        intersection.getY() + 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLightStraight);
+                panelSimulation.setComponentZOrder(trafficLightStraight, 0);
+                // RIGHT
+                JLabel trafficLightRight =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsNorth()[2] ? arrowGreenRight : arrowRedRight));
+                trafficLightRight.setBounds(
+                        intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                        intersection.getY() + 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLightRight);
+                panelSimulation.setComponentZOrder(trafficLightRight, 0);
 
-            // SOUTH
-            // LEFT
-            JLabel trafficLight2Left =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[0] ? arrowGreenLeft : arrowRedLeft));
-            trafficLight2Left.setBounds(
-                    intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
-                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight2Left);
-            panelSimulation.setComponentZOrder(trafficLight2Left, 0);
-            // STRAIGHT
-            JLabel trafficLight2Straight =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[1] ? arrowGreenUp : arrowRedUp));
-            trafficLight2Straight.setBounds(
-                    intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
-                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight2Straight);
-            panelSimulation.setComponentZOrder(trafficLight2Straight, 0);
-            // RIGHT
-            JLabel trafficLight2Right =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[2] ? arrowGreenRight : arrowRedRight));
-            trafficLight2Right.setBounds(
-                    intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
-                    intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight2Right);
-            panelSimulation.setComponentZOrder(trafficLight2Right, 0);
+                // SOUTH
+                // LEFT
+                JLabel trafficLight2Left =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[0] ? arrowGreenLeft : arrowRedLeft));
+                trafficLight2Left.setBounds(
+                        intersection.getX() + (intersection.getWidth() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                        intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight2Left);
+                panelSimulation.setComponentZOrder(trafficLight2Left, 0);
+                // STRAIGHT
+                JLabel trafficLight2Straight =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[1] ? arrowGreenUp : arrowRedUp));
+                trafficLight2Straight.setBounds(
+                        intersection.getX() + (intersection.getWidth() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                        intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight2Straight);
+                panelSimulation.setComponentZOrder(trafficLight2Straight, 0);
+                // RIGHT
+                JLabel trafficLight2Right =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsSouth()[2] ? arrowGreenRight : arrowRedRight));
+                trafficLight2Right.setBounds(
+                        intersection.getX() + (intersection.getWidth() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                        intersection.getY() + intersection.getHeight() - TRAFFIC_LIGHT_SIZE - 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight2Right);
+                panelSimulation.setComponentZOrder(trafficLight2Right, 0);
 
-            // VEST
-            // LEFT
-            JLabel trafficLight3Left =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[0] ? arrowGreenUp : arrowRedUp));
-            trafficLight3Left.setBounds(
-                    intersection.getX() + 1,
-                    intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight3Left);
-            panelSimulation.setComponentZOrder(trafficLight3Left, 0);
-            // STRAIGHT
-            JLabel trafficLight3Straight =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[1] ? arrowGreenRight : arrowRedRight));
-            trafficLight3Straight.setBounds(
-                    intersection.getX() + 1,
-                    intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight3Straight);
-            panelSimulation.setComponentZOrder(trafficLight3Straight, 0);
-            // RIGHT
-            JLabel trafficLight3Right =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[2] ? arrowGreenDown : arrowRedDown));
-            trafficLight3Right.setBounds(
-                    intersection.getX() + 1,
-                    intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight3Right);
-            panelSimulation.setComponentZOrder(trafficLight3Right, 0);
+                // VEST
+                // LEFT
+                JLabel trafficLight3Left =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[0] ? arrowGreenUp : arrowRedUp));
+                trafficLight3Left.setBounds(
+                        intersection.getX() + 1,
+                        intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight3Left);
+                panelSimulation.setComponentZOrder(trafficLight3Left, 0);
+                // STRAIGHT
+                JLabel trafficLight3Straight =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[1] ? arrowGreenRight : arrowRedRight));
+                trafficLight3Straight.setBounds(
+                        intersection.getX() + 1,
+                        intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight3Straight);
+                panelSimulation.setComponentZOrder(trafficLight3Straight, 0);
+                // RIGHT
+                JLabel trafficLight3Right =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsVest()[2] ? arrowGreenDown : arrowRedDown));
+                trafficLight3Right.setBounds(
+                        intersection.getX() + 1,
+                        intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight3Right);
+                panelSimulation.setComponentZOrder(trafficLight3Right, 0);
 
-            // EAST
-            // LEFT
-            JLabel trafficLight4Left =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[0] ? arrowGreenDown : arrowRedDown));
-            trafficLight4Left.setBounds(
-                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
-                    intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight4Left);
-            panelSimulation.setComponentZOrder(trafficLight4Left, 0);
-            // STRAIGHT
-            JLabel trafficLight4Straight =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[1] ? arrowGreenLeft : arrowRedLeft));
-            trafficLight4Straight.setBounds(
-                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
-                    intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight4Straight);
-            panelSimulation.setComponentZOrder(trafficLight4Straight, 0);
-            // RIGHT
-            JLabel trafficLight4Right =
-                    new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[2] ? arrowGreenUp : arrowRedUp));
-            trafficLight4Right.setBounds(
-                    intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
-                    intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
-                    TRAFFIC_LIGHT_SIZE,
-                    TRAFFIC_LIGHT_SIZE);
-            panelSimulation.add(trafficLight4Right);
-            panelSimulation.setComponentZOrder(trafficLight4Right, 0);
+                // EAST
+                // LEFT
+                JLabel trafficLight4Left =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[0] ? arrowGreenDown : arrowRedDown));
+                trafficLight4Left.setBounds(
+                        intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
+                        intersection.getY() + (intersection.getHeight() / 2) + (TRAFFIC_LIGHT_SIZE / 2) + 2,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight4Left);
+                panelSimulation.setComponentZOrder(trafficLight4Left, 0);
+                // STRAIGHT
+                JLabel trafficLight4Straight =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[1] ? arrowGreenLeft : arrowRedLeft));
+                trafficLight4Straight.setBounds(
+                        intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
+                        intersection.getY() + (intersection.getHeight() / 2) - (TRAFFIC_LIGHT_SIZE / 2),
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight4Straight);
+                panelSimulation.setComponentZOrder(trafficLight4Straight, 0);
+                // RIGHT
+                JLabel trafficLight4Right =
+                        new JLabel(new ImageIcon(intersection.getTrafficLightsEast()[2] ? arrowGreenUp : arrowRedUp));
+                trafficLight4Right.setBounds(
+                        intersection.getX() + intersection.getWidth() - TRAFFIC_LIGHT_SIZE - 1,
+                        intersection.getY() + (intersection.getHeight() / 2) - TRAFFIC_LIGHT_SIZE - (TRAFFIC_LIGHT_SIZE / 2) - 1,
+                        TRAFFIC_LIGHT_SIZE,
+                        TRAFFIC_LIGHT_SIZE);
+                panelSimulation.add(trafficLight4Right);
+                panelSimulation.setComponentZOrder(trafficLight4Right, 0);
+            }
 
         }
     }
@@ -1379,5 +1507,13 @@ public class TrafficSimulationView {
 
     public void setTrafficFlows(List<TrafficFlow> trafficFlows) {
         this.trafficFlows = trafficFlows;
+    }
+
+    public List<TrafficLightPhases> getTrafficLightPhaseses() {
+        return trafficLightPhaseses;
+    }
+
+    public void setTrafficLightPhaseses(List<TrafficLightPhases> trafficLightPhaseses) {
+        this.trafficLightPhaseses = trafficLightPhaseses;
     }
 }

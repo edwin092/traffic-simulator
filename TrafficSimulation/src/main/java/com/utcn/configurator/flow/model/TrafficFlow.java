@@ -1,4 +1,4 @@
-package com.utcn.flow;
+package com.utcn.configurator.flow.model;
 
 import com.utcn.bl.FastVehicleGenerator;
 import com.utcn.bl.MediumVehicleGenerator;

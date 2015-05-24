@@ -390,4 +390,36 @@ public class Intersection extends JButton {
         trafficLightsVest = new boolean[]{true, true, true};
         trafficLightsEast = new boolean[]{true, true, true};
     }
+
+    /**
+     * maybe use isFourPhased
+     */
+    public int getSegmentsNumber() {
+        int k = 0;
+        if (segmentEastIn != null) {
+            k++;
+        }
+        if (segmentEastOut != null) {
+            k++;
+        }
+        if (segmentVestIn != null) {
+            k++;
+        }
+        if (segmentVestOut != null) {
+            k++;
+        }
+        if (segmentNorthIn != null) {
+            k++;
+        }
+        if (segmentNorthOut != null) {
+            k++;
+        }
+        if (segmentSouthIn != null) {
+            k++;
+        }
+        if (segmentSouthOut != null) {
+            k++;
+        }
+        return k;
+    }
 }

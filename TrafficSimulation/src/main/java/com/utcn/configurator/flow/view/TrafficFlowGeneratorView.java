@@ -1,7 +1,7 @@
-package com.utcn.view;
+package com.utcn.configurator.flow.view;
 
-import com.utcn.flow.TrafficFlow;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.utcn.configurator.flow.model.TrafficFlow;
+import com.utcn.configurator.flow.utils.TrafficFlowGeneratorUtil;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -9,7 +9,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,7 +173,7 @@ public class TrafficFlowGeneratorView extends JFrame {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = exportToJSON(fc.getSelectedFile().getPath(), trafficFlowList);
+                    boolean res = TrafficFlowGeneratorUtil.exportToJSON(fc.getSelectedFile().getPath(), trafficFlowList);
 
                     if (!res) {
                         JOptionPane.showMessageDialog(null,
@@ -187,10 +186,6 @@ public class TrafficFlowGeneratorView extends JFrame {
         });
         btnGenerate.setBounds(464, 279, 89, 23);
         contentPane.add(btnGenerate);
-
-        JButton btnDelete = new JButton("Remove");
-        btnDelete.setBounds(464, 68, 89, 23);
-        contentPane.add(btnDelete);
     }
 
     /**
@@ -203,25 +198,5 @@ public class TrafficFlowGeneratorView extends JFrame {
         }
 
         return ids.toArray(new Integer[ids.size()]);
-    }
-
-    /**
-     * @param filepath
-     * @param trafficFlowList
-     * @return
-     */
-    private static boolean exportToJSON(String filepath, List<TrafficFlow> trafficFlowList) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            if (!filepath.contains(".json")) {
-                filepath += ".json";
-            }
-            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(filepath), trafficFlowList);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            return false;
-        }
-
-        return true;
     }
 }

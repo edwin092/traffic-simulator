@@ -1,6 +1,6 @@
 package com.utcn.utils;
 
-import com.utcn.flow.TrafficFlow;
+import com.utcn.configurator.flow.model.TrafficFlow;
 import com.utcn.models.Intersection;
 import com.utcn.view.TrafficSimulationView;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -171,24 +171,6 @@ public class TrafficSimulationUtil {
         }
 
         return customImportExportClass;
-    }
-
-    /**
-     * Import flow.
-     */
-    public static List<TrafficFlow> importFlowFromJSON(String filepath) {
-        ObjectMapper mapper = new ObjectMapper();
-        List<TrafficFlow> trafficFlows;
-
-        try {
-            trafficFlows = mapper.readValue(new File(filepath),
-                    mapper.getTypeFactory().constructCollectionType(List.class, TrafficFlow.class));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return trafficFlows;
     }
 
     /**

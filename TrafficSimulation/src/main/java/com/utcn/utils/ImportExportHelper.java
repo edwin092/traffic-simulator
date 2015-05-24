@@ -1,6 +1,9 @@
 package com.utcn.utils;
 
-import com.utcn.flow.TrafficFlow;
+import com.utcn.configurator.flow.model.TrafficFlow;
+import com.utcn.configurator.flow.utils.TrafficFlowGeneratorUtil;
+import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
+import com.utcn.configurator.trafficlight.utils.TrafficLightsConfiguratorUtil;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.view.TrafficSimulationView;
@@ -157,13 +160,27 @@ public class ImportExportHelper {
      * Import traffic flows.
      */
     public static boolean importFlowFromJSON(String filepath, TrafficSimulationView view) {
-        List<TrafficFlow> trafficFlows = TrafficSimulationUtil.importFlowFromJSON(filepath);
+        List<TrafficFlow> trafficFlows = TrafficFlowGeneratorUtil.importFromJSON(filepath);
 
         if (trafficFlows == null || trafficFlows.isEmpty()) {
             return false;
         }
 
         view.setTrafficFlows(trafficFlows);
+        return true;
+    }
+
+    /**
+     * Import traffic lights config.
+     */
+    public static boolean importTrafficLightsConfigFromJSON(String filepath, TrafficSimulationView view) {
+        List<TrafficLightPhases> trafficLightPhases = TrafficLightsConfiguratorUtil.importFromJSON(filepath);
+
+        if (trafficLightPhases == null || trafficLightPhases.isEmpty()) {
+            return false;
+        }
+
+        view.setTrafficLightPhaseses(trafficLightPhases);
         return true;
     }
 }
