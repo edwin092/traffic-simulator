@@ -45,11 +45,18 @@
             <version>3.4.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.13</version>
+        </dependency>
+
+
         <!--&lt;!&ndash; xml-rpc &ndash;&gt;-->
         <!--<dependency>-->
-            <!--<groupId>org.apache.xmlrpc</groupId>-->
-            <!--<artifactId>xmlrpc-server</artifactId>-->
-            <!--<version>3.1.3</version>-->
+        <!--<groupId>org.apache.xmlrpc</groupId>-->
+        <!--<artifactId>xmlrpc-server</artifactId>-->
+        <!--<version>3.1.3</version>-->
         <!--</dependency>-->
 
     </dependencies>
