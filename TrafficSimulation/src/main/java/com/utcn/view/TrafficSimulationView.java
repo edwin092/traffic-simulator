@@ -126,7 +126,7 @@ public class TrafficSimulationView {
      */
     private void initialize() {
         frame = new JFrame();
-        frame.setBounds(100, 100, 1337, 815);
+        frame.setBounds(100, 100, 1337, 715);
         frame.setTitle("Traffic Simulation");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -449,7 +449,7 @@ public class TrafficSimulationView {
         // End Help Menu
 
         JSplitPane splitPane = new JSplitPane();
-        splitPane.setBounds(10, 33, 1301, 710);
+        splitPane.setBounds(10, 33, 1301, 611);
         splitPane.setDividerLocation(800);
         frame.getContentPane().add(splitPane);
 
