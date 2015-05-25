@@ -289,7 +289,7 @@ public class TrafficSimulationView {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = ImportExportHelper.importFlowFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                    boolean res = ImportExportHelper.importTrafficLightsConfigFromJSON(fc.getSelectedFile().getAbsolutePath(),
                             getTrafficSimulationViewInstance());
                     if (res) {
                         lblTLConfigFileText.setText(TL_CONFIG_FILE_LOADED_MSG.replace("NAME", fc.getSelectedFile().getName()));
@@ -660,13 +660,13 @@ public class TrafficSimulationView {
         lblFlowConfigFileText = new JLabel(NO_FLOW_CONFIG_FILE_MSG);
         lblFlowConfigFileText.setFont(new Font("Tahoma", Font.BOLD, 11));
         lblFlowConfigFileText.setForeground(Color.RED);
-        lblFlowConfigFileText.setBounds(340, 9, 153, 14);
+        lblFlowConfigFileText.setBounds(340, 9, 193, 14);
         frame.getContentPane().add(lblFlowConfigFileText);
 
         lblTLConfigFileText = new JLabel(NO_TL_CONFIG_FILE_MSG);
         lblTLConfigFileText.setFont(new Font("Tahoma", Font.BOLD, 11));
         lblTLConfigFileText.setForeground(Color.RED);
-        lblTLConfigFileText.setBounds(500, 9, 193, 14);
+        lblTLConfigFileText.setBounds(540, 9, 233, 14);
         frame.getContentPane().add(lblTLConfigFileText);
     }
 

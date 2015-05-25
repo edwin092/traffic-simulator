@@ -67,16 +67,26 @@ public class EnvironmentSetup {
     }
 
     /**
-     * @return
+     * Returns a random end point intersection id.
+     *
+     * @return id of an end point intersection
      */
-    private int getRandomIntersectionId() {
-        int random = TrafficSimulationUtil.randInt(1, intersections.size() - 1);
+    private int getRandomEndPointId() {
+        boolean endPointFound = false;
+        int randomId;
+        do {
+            randomId = TrafficSimulationUtil.randInt(1, intersections.size() - 1);
 
-        // TODO
-        // check if dest is reachable
-        // use graph algorithms (cost min)
+            for (Intersection intersection : intersections) {
+                if ((intersection.getId() == randomId) &&
+                        (intersection.getSegmentsNumber() <= 2)) {
+                    // valid end point in simulation
+                    endPointFound = true;
+                }
+            }
+        } while (!endPointFound);
 
-        return random;
+        return randomId;
     }
 
     /**
@@ -93,10 +103,10 @@ public class EnvironmentSetup {
             int startId = trafficFlow.getStartingPoint();
             int endId;
             do {
-//                startId = getRandomIntersectionId();
+//                startId = getRandomEndPointId();
 
                 do {
-                    endId = getRandomIntersectionId();
+                    endId = getRandomEndPointId();
                 } while (startId == endId);
 
                 LinkedList<Integer> visited = new LinkedList<>();
