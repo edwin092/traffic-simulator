@@ -909,7 +909,6 @@ public class TrafficSimulationView {
         vehicleLabels = new CopyOnWriteArrayList<>();
 
         int globalCounter = 1;
-        int vehDest = 0;
 
         SimulationGraph simulationGraph =
                 TrafficSimulationUtil.convertSimulaionEnvironmentToGraph(getTrafficSimulationViewInstance());
@@ -936,7 +935,7 @@ public class TrafficSimulationView {
                     }
                 }
                 // segment acceleration
-                environmentSetup.checkSegments(vehDest);
+                environmentSetup.checkSegments();
                 // manage intersections traffic lights
                 environmentSetup.manageIntersectionsTrafficLights();
                 // increment counter

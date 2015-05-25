@@ -166,9 +166,8 @@ public class EnvironmentSetup {
     }
 
     /**
-     * @param vehDest
      */
-    public void checkSegments(int vehDest) {
+    public void checkSegments() {
         // verificare tronsoane
 
         int k = 1;
