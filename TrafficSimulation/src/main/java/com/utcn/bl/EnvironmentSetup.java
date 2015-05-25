@@ -2,10 +2,7 @@ package com.utcn.bl;
 
 import com.utcn.application.BriefFormatter;
 import com.utcn.configurator.flow.model.TrafficFlow;
-import com.utcn.models.Intersection;
-import com.utcn.models.IntersectionStatisticsManager;
-import com.utcn.models.Segment;
-import com.utcn.models.Vehicle;
+import com.utcn.models.*;
 import com.utcn.utils.BreadthFirstSearch;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
@@ -92,7 +89,7 @@ public class EnvironmentSetup {
     /**
      * Generate a new vehicle.
      */
-    public void generateVehicle(SimulationGraph simulationGraph, TrafficFlow trafficFlow) {
+    public Vehicle generateVehicle(SimulationGraph simulationGraph, TrafficFlow trafficFlow) {
         if (trafficFlow.getVehicleGenerator().isCounterZero()) {
 
             logger.info("New Vehicle generated!");
@@ -141,7 +138,10 @@ public class EnvironmentSetup {
             TrafficSimulationView.addNewSimulationLogEntry("\n\nVehicle " + newVehicle.getId() + ":");
             TrafficSimulationView.addNewSimulationLogEntry("\n  Starting point: Intersection " + startId);
             TrafficSimulationView.addNewSimulationLogEntry("\n  End point:      Intersection " + endId);
+
+            return newVehicle;
         }
+        return null;
     }
 
     /**
@@ -167,7 +167,7 @@ public class EnvironmentSetup {
 
     /**
      */
-    public void checkSegments() {
+    public void checkSegments(VehicleStatisticsManager vehicleStatisticsManager, int counter) {
         // verificare tronsoane
 
         int k = 1;
@@ -220,10 +220,12 @@ public class EnvironmentSetup {
                     if (segmentVehicles.get(0).getDestination().getId() == seg
                             .getId()) {
                         // Destination reached
-                        segmentVehicles.remove(0);
+                        Vehicle removedVehicle = segmentVehicles.remove(0);
                         if (!segmentVehicles.isEmpty()) {
                             segmentVehicles.get(0).setDistanceToObstacle(segmentVehicles.get(0).getDistanceToObstacle() + Vehicle.SIZE);
                         }
+
+                        vehicleStatisticsManager.addVehicleEndTime(removedVehicle.getId(), counter);
 
                     } else {
                         Segment nextSegment = getNextSegmentFromRoute(
@@ -243,10 +245,13 @@ public class EnvironmentSetup {
 
                             nextSegment.getVehicles().add(segmentVehicles.get(0));
 
-                            segmentVehicles.remove(0);
+                            Vehicle removedVehicle = segmentVehicles.remove(0);
                             if (!segmentVehicles.isEmpty()) {
                                 segmentVehicles.get(0).setDistanceToObstacle(segmentVehicles.get(0).getDistanceToObstacle() + Vehicle.SIZE);
                             }
+
+                            // record vehicle statistics
+                            vehicleStatisticsManager.incrementIntersectionsPassed(removedVehicle.getId());
 
                             if (nextSegment.getIntersectionFrom().isFourPhased()) {
                                 // record intersection statistics

@@ -7,10 +7,7 @@ import com.utcn.configurator.flow.view.TrafficFlowGeneratorView;
 import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
 import com.utcn.configurator.trafficlight.view.TrafficLightsConfiguratorView;
 import com.utcn.controllers.TrafficSimulationController;
-import com.utcn.models.Intersection;
-import com.utcn.models.IntersectionStatistics;
-import com.utcn.models.Segment;
-import com.utcn.models.Vehicle;
+import com.utcn.models.*;
 import com.utcn.optimization.TrafficLightsOptimization;
 import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.SimulationGraph;
@@ -89,6 +86,9 @@ public class TrafficSimulationView {
 
     private Map<Integer, List<Integer>> segmentCoordsX = new HashMap<>();
     private Map<Integer, List<Integer>> segmentCoordsY = new HashMap<>();
+
+    // statistics
+    private VehicleStatisticsManager vehicleStatisticsManager;
 
     // arrows images for traffic lights
     private BufferedImage arrowGreenLeft;
@@ -908,6 +908,8 @@ public class TrafficSimulationView {
 
         vehicleLabels = new CopyOnWriteArrayList<>();
 
+        vehicleStatisticsManager = new VehicleStatisticsManager();
+
         int globalCounter = 1;
 
         SimulationGraph simulationGraph =
@@ -931,11 +933,14 @@ public class TrafficSimulationView {
                 for (TrafficFlow trafficFlow : trafficFlows) {
                     if (trafficFlow.getStartTime() <= globalCounter && trafficFlow.getEndTime() >= globalCounter) {
                         // generate new vehicle
-                        environmentSetup.generateVehicle(simulationGraph, trafficFlow);
+                        Vehicle newVehicle = environmentSetup.generateVehicle(simulationGraph, trafficFlow);
+                        if (newVehicle != null) {
+                            vehicleStatisticsManager.addNewVehicle(newVehicle.getId(), globalCounter);
+                        }
                     }
                 }
                 // segment acceleration
-                environmentSetup.checkSegments();
+                environmentSetup.checkSegments(vehicleStatisticsManager, globalCounter);
                 // manage intersections traffic lights
                 environmentSetup.manageIntersectionsTrafficLights();
                 // increment counter
@@ -1520,5 +1525,13 @@ public class TrafficSimulationView {
 
     public void setTrafficLightPhaseses(List<TrafficLightPhases> trafficLightPhaseses) {
         this.trafficLightPhaseses = trafficLightPhaseses;
+    }
+
+    public VehicleStatisticsManager getVehicleStatisticsManager() {
+        return vehicleStatisticsManager;
+    }
+
+    public void setVehicleStatisticsManager(VehicleStatisticsManager vehicleStatisticsManager) {
+        this.vehicleStatisticsManager = vehicleStatisticsManager;
     }
 }
