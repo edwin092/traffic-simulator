@@ -19,7 +19,6 @@ public class TrafficFlowGeneratorView extends JFrame {
 
     private JPanel contentPane;
     private int currentY;
-    private int numberOfIntersections;
 
     private List<JComboBox> typeComboBoxes;
     private List<JComboBox> startingPointComboBoxes;
@@ -27,27 +26,9 @@ public class TrafficFlowGeneratorView extends JFrame {
     private List<JTextField> endTimeTextFields;
 
     /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    TrafficFlowGeneratorView frame = new TrafficFlowGeneratorView(6);
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    /**
      * Create the frame.
      */
-    public TrafficFlowGeneratorView(int numberOfIntersections) {
-        this.numberOfIntersections = numberOfIntersections;
-
+    public TrafficFlowGeneratorView(final Integer[] intersectionIds) {
         typeComboBoxes = new ArrayList<>();
         startingPointComboBoxes = new ArrayList<>();
         startTimeTextFields = new ArrayList<>();
@@ -76,7 +57,7 @@ public class TrafficFlowGeneratorView extends JFrame {
                 typeComboBoxes.add(typeComboBox);
 
                 JComboBox<Integer> startingPointComboBox = new JComboBox<>();
-                startingPointComboBox.setModel(new DefaultComboBoxModel<>(getIntersectionIdList()));
+                startingPointComboBox.setModel(new DefaultComboBoxModel<>(intersectionIds));
                 startingPointComboBox.setBounds(155, currentY + 23 + 20, 108,
                         23);
                 contentPane.add(startingPointComboBox);
@@ -116,7 +97,7 @@ public class TrafficFlowGeneratorView extends JFrame {
         typeComboBoxes.add(typeComboBox);
 
         final JComboBox<Integer> startingPointComboBox = new JComboBox<>();
-        startingPointComboBox.setModel(new DefaultComboBoxModel<>(getIntersectionIdList()));
+        startingPointComboBox.setModel(new DefaultComboBoxModel<>(intersectionIds));
         startingPointComboBox.setBounds(155, 68, 108, 23);
         contentPane.add(startingPointComboBox);
 
@@ -186,17 +167,5 @@ public class TrafficFlowGeneratorView extends JFrame {
         });
         btnGenerate.setBounds(464, 279, 89, 23);
         contentPane.add(btnGenerate);
-    }
-
-    /**
-     * @return
-     */
-    private Integer[] getIntersectionIdList() {
-        List<Integer> ids = new ArrayList<>();
-        for (int i = 1; i <= numberOfIntersections; i++) {
-            ids.add(i);
-        }
-
-        return ids.toArray(new Integer[ids.size()]);
     }
 }

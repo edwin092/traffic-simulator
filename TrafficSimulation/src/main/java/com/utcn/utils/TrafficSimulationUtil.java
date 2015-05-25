@@ -1,6 +1,5 @@
 package com.utcn.utils;
 
-import com.utcn.configurator.flow.model.TrafficFlow;
 import com.utcn.models.Intersection;
 import com.utcn.view.TrafficSimulationView;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -28,6 +27,22 @@ public class TrafficSimulationUtil {
      */
     public static int[] convertList(List<Integer> list) {
         int[] x = new int[list.size()];
+
+        for (int i = 0; i < list.size(); i++) {
+            x[i] = list.get(i);
+        }
+
+        return x;
+    }
+
+    /**
+     * Convert a List of Integer to a new Integer[].
+     *
+     * @param list the list of integers
+     * @return the new Integer[]
+     */
+    public static Integer[] convertListToIntegerList(List<Integer> list) {
+        Integer[] x = new Integer[list.size()];
 
         for (int i = 0; i < list.size(); i++) {
             x[i] = list.get(i);

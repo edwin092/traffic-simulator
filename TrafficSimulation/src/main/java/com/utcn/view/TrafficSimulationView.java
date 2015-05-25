@@ -221,7 +221,13 @@ public class TrafficSimulationView {
         generateFlowConfigMenuItem.setToolTipText("Create a JSON config file for traffic flows.");
         generateFlowConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new TrafficFlowGeneratorView(currentIntersId - 1).setVisible(true);
+                List<Integer> ids = new ArrayList<>();
+                for (Intersection intersection : intersections) {
+                    if (intersection.getSegmentsNumber() <= 2) {
+                        ids.add(intersection.getId());
+                    }
+                }
+                new TrafficFlowGeneratorView(TrafficSimulationUtil.convertListToIntegerList(ids)).setVisible(true);
             }
         });
         mnSimulation.add(generateFlowConfigMenuItem);
