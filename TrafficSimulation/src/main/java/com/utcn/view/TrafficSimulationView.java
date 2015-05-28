@@ -65,6 +65,7 @@ public class TrafficSimulationView {
     private static StyledDocument textPaneSimulationLog;
     private static StyledDocument textPaneStatisticsLog;
     // menu items
+    private JMenu mnStatistics;
     private JMenuItem startMenuItem;
     private JMenuItem pauseMenuItem;
     private JMenuItem resumeMenuItem;
@@ -397,8 +398,9 @@ public class TrafficSimulationView {
         mnComponents.add(mntmIntersection);
 
         // Statistics Menu
-        JMenu mnStatistics = new JMenu("Statistics");
+        mnStatistics = new JMenu("Statistics");
         menuBar.add(mnStatistics);
+        mnStatistics.setEnabled(false);
 
         JMenuItem mntmVehiclesInters = new JMenuItem("Vehicles per Intersection");
         mntmVehiclesInters.addActionListener(new ActionListener() {
@@ -997,6 +999,8 @@ public class TrafficSimulationView {
 
         lblCounter.setText(String.valueOf(simulationTime));
         addNewSimulationLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
+        // enable statistics only after simulation ends
+        mnStatistics.setEnabled(true);
     }
 
     /**
@@ -1318,6 +1322,7 @@ public class TrafficSimulationView {
         // disable Pause/Resume menu items
         pauseMenuItem.setEnabled(false);
         resumeMenuItem.setEnabled(false);
+        mnStatistics.setEnabled(false);
     }
 
     /**
