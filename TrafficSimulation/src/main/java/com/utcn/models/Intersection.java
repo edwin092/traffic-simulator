@@ -323,10 +323,10 @@ public class Intersection extends JButton {
         } else if (segmentNorthIn != null && segmentNorthIn.getId() == currentSeg.getId()) {
             // NORTH
             if (segmentEastOut != null && segmentEastOut.getId() == nextSeg.getId()) {
-                return 0;
+                return 2;
             }
             if (segmentVestOut != null && segmentVestOut.getId() == nextSeg.getId()) {
-                return 2;
+                return 0;
             }
             if (segmentSouthOut != null && segmentSouthOut.getId() == nextSeg.getId()) {
                 return 1;
