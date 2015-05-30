@@ -9,6 +9,8 @@ import com.utcn.configurator.trafficlight.view.TrafficLightsConfiguratorView;
 import com.utcn.controllers.TrafficSimulationController;
 import com.utcn.models.*;
 import com.utcn.optimization.GeneticAlgorithmOptimization;
+import com.utcn.statistics.IntersectionStatistics;
+import com.utcn.statistics.VehicleStatisticsManager;
 import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
@@ -968,14 +970,23 @@ public class TrafficSimulationView {
                 environmentSetup.checkSegments(vehicleStatisticsManager, globalCounter);
                 // manage intersections traffic lights
                 environmentSetup.manageIntersectionsTrafficLights();
+
+                for (Segment segment : segments) {
+                    for (Vehicle veh : segment.getVehicles()) {
+                        if (veh.getSpeed() == 0) {
+                            vehicleStatisticsManager.incrementVehicleWaitingTime(veh.getId());
+                        }
+                    }
+                }
+
                 // increment counter
                 globalCounter++;
             }
 
             for (Segment segment : segments) {
-
                 for (Vehicle veh : segment.getVehicles()) {
 
+                    // TODO not used in optimization
 //                    JLabel lblO = new JLabel(String.valueOf(veh.getId()));
                     JLabel lblO = new JLabel("O");
                     // TODO move this into Vehicle entity
@@ -1020,7 +1031,8 @@ public class TrafficSimulationView {
             }
         } while (globalCounter < simulationTime);
 
-//        System.out.println(vehicleStatisticsManager.getVehiclesAverageSimulationTime());
+        System.out.println(vehicleStatisticsManager.getVehicleStatisticsList().size());
+        System.out.println(vehicleStatisticsManager.getVehiclesAverageWaitingTime());
 
         lblCounter.setText(String.valueOf(simulationTime));
         addNewSimulationLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");

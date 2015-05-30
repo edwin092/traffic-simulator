@@ -1,4 +1,4 @@
-package com.utcn.models;
+package com.utcn.statistics;
 
 public class IntersectionStatistics {
     // id of intersection

@@ -1,5 +1,7 @@
-package com.utcn.models;
+package com.utcn.statistics;
 
+
+import com.utcn.statistics.IntersectionStatistics;
 
 import java.util.ArrayList;
 import java.util.List;

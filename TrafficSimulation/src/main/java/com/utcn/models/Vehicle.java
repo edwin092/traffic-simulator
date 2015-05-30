@@ -13,7 +13,6 @@ public class Vehicle {
     public static final double SIZE = 3;
 
     private int id;
-    private int currentSpeed;
     private Segment destination;
     private List<Segment> routeList;
     private Segment currentSegment;
@@ -26,20 +25,6 @@ public class Vehicle {
 
     public Vehicle() {
         routeList = new ArrayList<>();
-    }
-
-    /**
-     * @deprecated
-     */
-    public int getCurrentSpeed() {
-        return currentSpeed;
-    }
-
-    /**
-     * @deprecated
-     */
-    public void setCurrentSpeed(int currentSpeed) {
-        this.currentSpeed = currentSpeed;
     }
 
     public Segment getDestination() {

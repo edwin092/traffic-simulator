@@ -3,6 +3,8 @@ package com.utcn.bl;
 import com.utcn.application.BriefFormatter;
 import com.utcn.configurator.flow.model.TrafficFlow;
 import com.utcn.models.*;
+import com.utcn.statistics.IntersectionStatisticsManager;
+import com.utcn.statistics.VehicleStatisticsManager;
 import com.utcn.utils.BreadthFirstSearch;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
@@ -92,7 +94,7 @@ public class EnvironmentSetup {
     public Vehicle generateVehicle(SimulationGraph simulationGraph, TrafficFlow trafficFlow) {
         if (trafficFlow.getVehicleGenerator().isCounterZero()) {
 
-            logger.info("New Vehicle generated!");
+//            logger.info("New Vehicle generated!");
 
             Vehicle newVehicle = trafficFlow.getVehicleGenerator().initNewVehicle();
 

@@ -1,4 +1,4 @@
-package com.utcn.models;
+package com.utcn.statistics;
 
 
 public class VehicleStatistics {
@@ -10,6 +10,7 @@ public class VehicleStatistics {
     private int numberOfIntersectionsPassed;
     private int startTime;
     private int endTime;
+    private int waitingTime;
 
     public VehicleStatistics(int vehicleId) {
         this.vehicleId = vehicleId;
@@ -20,8 +21,12 @@ public class VehicleStatistics {
         this.startTime = startTime;
     }
 
-    public void incrementIntersectionsPassed(){
+    public void incrementIntersectionsPassed() {
         this.numberOfIntersectionsPassed++;
+    }
+
+    public void incrementWaitingTime() {
+        this.waitingTime++;
     }
 
     @Override
@@ -74,5 +79,13 @@ public class VehicleStatistics {
 
     public void setNumberOfIntersectionsPassed(int numberOfIntersectionsPassed) {
         this.numberOfIntersectionsPassed = numberOfIntersectionsPassed;
+    }
+
+    public int getWaitingTime() {
+        return waitingTime;
+    }
+
+    public void setWaitingTime(int waitingTime) {
+        this.waitingTime = waitingTime;
     }
 }

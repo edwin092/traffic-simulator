@@ -1,4 +1,4 @@
-package com.utcn.models;
+package com.utcn.statistics;
 
 
 import java.util.ArrayList;
@@ -36,12 +36,25 @@ public class VehicleStatisticsManager {
         return k;
     }
 
-    public int getVehiclesAverageSimulationTime() {
+    public void incrementVehicleWaitingTime(int vehicleId) {
+        vehicleStatisticsList
+                .get(vehicleStatisticsList.indexOf(new VehicleStatistics(vehicleId))).incrementWaitingTime();
+    }
+
+    public float getVehiclesAverageSimulationTime() {
         int sum = 0;
         for (VehicleStatistics vehicleStatistics : vehicleStatisticsList) {
             if (vehicleStatistics.getEndTime() > 0) {
                 sum += vehicleStatistics.getSimulationExitTime();
             }
+        }
+        return sum / vehicleStatisticsList.size();
+    }
+
+    public float getVehiclesAverageWaitingTime() {
+        int sum = 0;
+        for (VehicleStatistics vehicleStatistics : vehicleStatisticsList) {
+            sum += vehicleStatistics.getWaitingTime();
         }
         return sum / vehicleStatisticsList.size();
     }
