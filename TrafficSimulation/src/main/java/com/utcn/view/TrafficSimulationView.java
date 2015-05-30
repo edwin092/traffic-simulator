@@ -8,7 +8,7 @@ import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
 import com.utcn.configurator.trafficlight.view.TrafficLightsConfiguratorView;
 import com.utcn.controllers.TrafficSimulationController;
 import com.utcn.models.*;
-import com.utcn.optimization.TrafficLightsOptimization;
+import com.utcn.optimization.GeneticAlgorithmOptimization;
 import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
@@ -17,6 +17,7 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jgap.InvalidConfigurationException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -441,6 +442,24 @@ public class TrafficSimulationView {
         });
         mnStatistics.add(mntmVehiclesInters);
         // End Statistics Menu
+
+        JMenu mnOptimization = new JMenu("Optimization");
+        menuBar.add(mnOptimization);
+
+        JMenuItem mntmGA = new JMenuItem("Genetic algorithm");
+        mntmGA.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                requestSimulationTime();
+
+                try {
+                    GeneticAlgorithmOptimization.optimize(getTrafficSimulationViewInstance());
+                } catch (InvalidConfigurationException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+        mnOptimization.add(mntmGA);
 
         // Help Menu
         JMenu mnHelp = new JMenu("Help");
@@ -873,7 +892,8 @@ public class TrafficSimulationView {
                     }
                 }
 //                intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
-                intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
+//                intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
+                intersection.setPhaseOrder(new Integer[]{1, 2, 3, 4});
 
                 TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
             } else {
@@ -911,6 +931,11 @@ public class TrafficSimulationView {
         vehicleLabels = new CopyOnWriteArrayList<>();
 
         vehicleStatisticsManager = new VehicleStatisticsManager();
+
+        // reset segment vehicles
+        for (Segment segment : segments) {
+            segment.setVehicles(new ArrayList<Vehicle>());
+        }
 
         int globalCounter = 1;
 
@@ -994,6 +1019,8 @@ public class TrafficSimulationView {
                 System.out.println(e.getMessage());
             }
         } while (globalCounter < simulationTime);
+
+//        System.out.println(vehicleStatisticsManager.getVehiclesAverageSimulationTime());
 
         lblCounter.setText(String.valueOf(simulationTime));
         addNewSimulationLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
@@ -1500,6 +1527,14 @@ public class TrafficSimulationView {
 
     public List<Integer> getCurrentSegmentYCoords() {
         return segmentCoordsY.get(currentSegment);
+    }
+
+    public int getSimulationTime() {
+        return simulationTime;
+    }
+
+    public void setSimulationTime(int simulationTime) {
+        this.simulationTime = simulationTime;
     }
 
     public int getSimulationStep() {
