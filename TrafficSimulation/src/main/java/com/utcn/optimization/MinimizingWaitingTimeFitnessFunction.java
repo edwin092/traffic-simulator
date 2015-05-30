@@ -1,5 +1,6 @@
-package com.utcn.bl;
+package com.utcn.optimization;
 
+import com.utcn.bl.VehicleGenerator;
 import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
 import com.utcn.models.Intersection;
 import com.utcn.view.TrafficSimulationView;
@@ -57,6 +58,6 @@ public class MinimizingWaitingTimeFitnessFunction extends FitnessFunction {
         // start simulation
         view.simulate();
 
-        return BIG_NUMBER - view.getVehicleStatisticsManager().getVehiclesAverageSimulationTime();
+        return BIG_NUMBER - view.getVehicleStatisticsManager().getVehiclesAverageWaitingTime();
     }
 }

@@ -1,6 +1,5 @@
 package com.utcn.optimization;
 
-import com.utcn.bl.MinimizingWaitingTimeFitnessFunction;
 import com.utcn.models.Intersection;
 import com.utcn.view.TrafficSimulationView;
 import org.jgap.*;
@@ -51,12 +50,14 @@ public class GeneticAlgorithmOptimization {
 
         conf.setSampleChromosome(sampleChromosome);
 
-        conf.setPopulationSize(5);
+        conf.setPopulationSize(500);
 
         Genotype population = Genotype.randomInitialGenotype(conf);
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 5; i++) {
+            System.out.println(i);
             population.evolve();
         }
         IChromosome bestSolutionSoFar = population.getFittestChromosome();
+
     }
 }
