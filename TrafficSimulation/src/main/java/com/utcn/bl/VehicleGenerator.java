@@ -4,13 +4,15 @@ package com.utcn.bl;
 import com.utcn.models.StandardEngine;
 import com.utcn.models.Vehicle;
 
-public abstract class VehicleGenerator {
+public class VehicleGenerator {
 
     public static int currentId;
     protected int counter;
+    private int duration;
 
-    public VehicleGenerator() {
-        generateNewTime();
+    public VehicleGenerator(int duration) {
+        this.counter = duration;
+        this.duration = duration;
     }
 
     public Vehicle initNewVehicle() {
@@ -29,7 +31,10 @@ public abstract class VehicleGenerator {
         currentId++;
     }
 
-    public abstract void generateNewTime();
+    public void generateNewTime() {
+        // TODO add variation
+        counter = duration;
+    }
 
     public boolean isCounterZero() {
         counter--;

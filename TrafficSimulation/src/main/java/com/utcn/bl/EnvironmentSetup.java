@@ -97,26 +97,30 @@ public class EnvironmentSetup {
             Vehicle newVehicle = trafficFlow.getVehicleGenerator().initNewVehicle();
 
             List<Integer> intersectionIdsSolution = null;
-            int startId = trafficFlow.getStartingPoint();
-            int endId;
-            do {
+            if (trafficFlow.getStartingPoint() > 0) {
+                int startId = trafficFlow.getStartingPoint();
+                int endId;
+                do {
 //                startId = getRandomEndPointId();
 
-                do {
-                    endId = getRandomEndPointId();
-                } while (startId == endId);
+                    do {
+                        endId = getRandomEndPointId();
+                    } while (startId == endId);
 
-                LinkedList<Integer> visited = new LinkedList<>();
-                visited.add(startId);
-                Map<Integer, List<Integer>> solutions = BreadthFirstSearch.breadthFirst(simulationGraph, visited, endId);
+                    LinkedList<Integer> visited = new LinkedList<>();
+                    visited.add(startId);
+                    Map<Integer, List<Integer>> solutions = BreadthFirstSearch.breadthFirst(simulationGraph, visited, endId);
 
-                for (int i = 1; i <= solutions.size(); i++) {
-                    if (solutions.get(i).size() > 2) {
-                        intersectionIdsSolution = solutions.get(i);
+                    for (int i = 1; i <= solutions.size(); i++) {
+                        if (solutions.get(i).size() > 2) {
+                            intersectionIdsSolution = solutions.get(i);
+                        }
                     }
-                }
-            } while (intersectionIdsSolution == null);
+                } while (intersectionIdsSolution == null);
 
+            } else {
+                intersectionIdsSolution = trafficFlow.getRouteList();
+            }
 
             List<Segment> routeList = new ArrayList<>();
             for (int i = 0; i < intersectionIdsSolution.size() - 1; i++) {
@@ -136,8 +140,10 @@ public class EnvironmentSetup {
 
 
             TrafficSimulationView.addNewSimulationLogEntry("\n\nVehicle " + newVehicle.getId() + ":");
-            TrafficSimulationView.addNewSimulationLogEntry("\n  Starting point: Intersection " + startId);
-            TrafficSimulationView.addNewSimulationLogEntry("\n  End point:      Intersection " + endId);
+            TrafficSimulationView.addNewSimulationLogEntry("\n  Starting point: Intersection "
+                    + intersectionIdsSolution.get(0));
+            TrafficSimulationView.addNewSimulationLogEntry("\n  End point:      Intersection "
+                    + intersectionIdsSolution.get(intersectionIdsSolution.size() - 1));
 
             return newVehicle;
         }

@@ -2,6 +2,7 @@ package com.utcn.configurator.flow.utils;
 
 
 import com.utcn.configurator.flow.model.TrafficFlow;
+import com.utcn.models.Segment;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
@@ -47,5 +48,36 @@ public class TrafficFlowGeneratorUtil {
         }
 
         return trafficFlows;
+    }
+
+    /**
+     * @param routeList
+     * @param segments
+     * @return
+     */
+    public static boolean validateRouteList(List<Integer> routeList, List<Segment> segments) {
+        boolean valid;
+        for (int i = 0; i < routeList.size() - 1; i++) {
+            valid = false;
+            for (Segment segment : segments) {
+                if (segment.getIntersectionFrom().getId() == routeList.get(i) &&
+                        segment.getIntersectionTo().getId() == routeList.get(i + 1)) {
+                    if (i == 0 && segment.getIntersectionFrom().getSegmentsNumber() <= 2) {
+                        // start point
+                        valid = true;
+                    } else if (i == routeList.size() - 2 && segment.getIntersectionTo().getSegmentsNumber() <= 2) {
+                        // end point
+                        valid = true;
+                    } else if (i > 0 && i < routeList.size() - 2) {
+                        // normal segment
+                        valid = true;
+                    }
+                }
+            }
+            if (!valid) {
+                return false;
+            }
+        }
+        return true;
     }
 }

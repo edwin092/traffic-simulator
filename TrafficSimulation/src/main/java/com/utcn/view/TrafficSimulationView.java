@@ -228,7 +228,7 @@ public class TrafficSimulationView {
                         ids.add(intersection.getId());
                     }
                 }
-                new TrafficFlowGeneratorView(TrafficSimulationUtil.convertListToIntegerList(ids)).setVisible(true);
+                new TrafficFlowGeneratorView(TrafficSimulationUtil.convertListToIntegerList(ids), segments).setVisible(true);
             }
         });
         mnSimulation.add(generateFlowConfigMenuItem);
@@ -933,12 +933,10 @@ public class TrafficSimulationView {
             for (int i = 0; i < simulationStep; i++) {
                 // check each flow
                 for (TrafficFlow trafficFlow : trafficFlows) {
-                    if (trafficFlow.getStartTime() <= globalCounter && trafficFlow.getEndTime() >= globalCounter) {
-                        // generate new vehicle
-                        Vehicle newVehicle = environmentSetup.generateVehicle(simulationGraph, trafficFlow);
-                        if (newVehicle != null) {
-                            vehicleStatisticsManager.addNewVehicle(newVehicle.getId(), globalCounter);
-                        }
+                    // generate new vehicle
+                    Vehicle newVehicle = environmentSetup.generateVehicle(simulationGraph, trafficFlow);
+                    if (newVehicle != null) {
+                        vehicleStatisticsManager.addNewVehicle(newVehicle.getId(), globalCounter);
                     }
                 }
                 // segment acceleration

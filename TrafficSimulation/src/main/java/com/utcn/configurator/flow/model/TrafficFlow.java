@@ -1,49 +1,30 @@
 package com.utcn.configurator.flow.model;
 
-import com.utcn.bl.FastVehicleGenerator;
-import com.utcn.bl.MediumVehicleGenerator;
-import com.utcn.bl.SlowVehicleGenerator;
 import com.utcn.bl.VehicleGenerator;
 import org.codehaus.jackson.annotate.JsonIgnore;
+
+import java.util.List;
 
 public class TrafficFlow {
 
     @JsonIgnore
     private VehicleGenerator vehicleGenerator;
-    private String type;
     private int startingPoint;
-    private int startTime;
-    private int endTime;
+    private List<Integer> routeList;
+    private int duration;
 
     public TrafficFlow() {
     }
 
-    public TrafficFlow(String type, int startingPoint, int startTime,
-                       int endTime) {
-        this.type = type;
+    public TrafficFlow(int startingPoint, int duration) {
         this.startingPoint = startingPoint;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.duration = duration;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-
-        switch (type) {
-            case "Slow":
-                vehicleGenerator = new SlowVehicleGenerator();
-                break;
-            case "Medium":
-                vehicleGenerator = new MediumVehicleGenerator();
-                break;
-            case "Fast":
-                vehicleGenerator = new FastVehicleGenerator();
-                break;
-        }
+    public TrafficFlow(int startingPoint, List<Integer> routeList, int duration) {
+        this.startingPoint = startingPoint;
+        this.routeList = routeList;
+        this.duration = duration;
     }
 
     public int getStartingPoint() {
@@ -54,28 +35,27 @@ public class TrafficFlow {
         this.startingPoint = startingPoint;
     }
 
-    public int getStartTime() {
-        return startTime;
+    public int getDuration() {
+        return duration;
     }
 
-    public void setStartTime(int startTime) {
-        this.startTime = startTime;
+    public void setDuration(int duration) {
+        vehicleGenerator = new VehicleGenerator(duration);
+        this.duration = duration;
     }
 
-    public int getEndTime() {
-        return endTime;
+    public List<Integer> getRouteList() {
+        return routeList;
     }
 
-    public void setEndTime(int endTime) {
-        this.endTime = endTime;
+    public void setRouteList(List<Integer> routeList) {
+        this.routeList = routeList;
     }
 
-    @JsonIgnore
     public VehicleGenerator getVehicleGenerator() {
         return vehicleGenerator;
     }
 
-    @JsonIgnore
     public void setVehicleGenerator(VehicleGenerator vehicleGenerator) {
         this.vehicleGenerator = vehicleGenerator;
     }
