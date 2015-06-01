@@ -2,7 +2,9 @@ package com.utcn.bl;
 
 import com.utcn.application.BriefFormatter;
 import com.utcn.configurator.flow.model.TrafficFlow;
-import com.utcn.models.*;
+import com.utcn.models.Intersection;
+import com.utcn.models.Segment;
+import com.utcn.models.Vehicle;
 import com.utcn.statistics.IntersectionStatisticsManager;
 import com.utcn.statistics.VehicleStatisticsManager;
 import com.utcn.utils.BreadthFirstSearch;
@@ -91,7 +93,7 @@ public class EnvironmentSetup {
     /**
      * Generate a new vehicle.
      */
-    public Vehicle generateVehicle(SimulationGraph simulationGraph, TrafficFlow trafficFlow) {
+    public Vehicle generateVehicle(SimulationGraph simulationGraph, TrafficFlow trafficFlow, boolean isViewEnabled) {
         if (trafficFlow.getVehicleGenerator().isCounterZero()) {
 
 //            logger.info("New Vehicle generated!");
@@ -140,12 +142,13 @@ public class EnvironmentSetup {
             newVehicle.setRouteList(routeList);
             routeList.get(0).getVehicles().add(newVehicle);
 
-
-            TrafficSimulationView.addNewSimulationLogEntry("\n\nVehicle " + newVehicle.getId() + ":");
-            TrafficSimulationView.addNewSimulationLogEntry("\n  Starting point: Intersection "
-                    + intersectionIdsSolution.get(0));
-            TrafficSimulationView.addNewSimulationLogEntry("\n  End point:      Intersection "
-                    + intersectionIdsSolution.get(intersectionIdsSolution.size() - 1));
+            if (isViewEnabled) {
+                TrafficSimulationView.addNewSimulationLogEntry("\n\nVehicle " + newVehicle.getId() + ":");
+                TrafficSimulationView.addNewSimulationLogEntry("\n  Starting point: Intersection "
+                        + intersectionIdsSolution.get(0));
+                TrafficSimulationView.addNewSimulationLogEntry("\n  End point:      Intersection "
+                        + intersectionIdsSolution.get(intersectionIdsSolution.size() - 1));
+            }
 
             return newVehicle;
         }

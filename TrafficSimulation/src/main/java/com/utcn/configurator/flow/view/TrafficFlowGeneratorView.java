@@ -192,6 +192,7 @@ public class TrafficFlowGeneratorView extends JFrame {
                 }
 
                 JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle("Add config file");
                 fc.setCurrentDirectory(new File("."));
                 fc.setAcceptAllFileFilterUsed(false);
                 fc.showOpenDialog(null);

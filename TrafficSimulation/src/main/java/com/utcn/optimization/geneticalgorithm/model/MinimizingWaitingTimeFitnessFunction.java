@@ -1,4 +1,4 @@
-package com.utcn.optimization;
+package com.utcn.optimization.geneticalgorithm.model;
 
 import com.utcn.bl.VehicleGenerator;
 import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
@@ -54,9 +54,9 @@ public class MinimizingWaitingTimeFitnessFunction extends FitnessFunction {
         VehicleGenerator.currentId = 0;
         view.setTrafficLightPhaseses(trafficLightPhaseses);
         // simulation step = simulation time
-        view.setSimulationStep(view.getSimulationTime());
+        TrafficSimulationView.SIMULATION_STEP = TrafficSimulationView.SIMULATION_TIME;
         // start simulation
-        view.simulate();
+        view.simulate(false);
 
         return BIG_NUMBER - view.getVehicleStatisticsManager().getVehiclesAverageWaitingTime();
     }

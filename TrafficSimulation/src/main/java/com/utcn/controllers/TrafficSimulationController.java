@@ -551,7 +551,7 @@ public class TrafficSimulationController {
 //                }
             }
 
-            simView.simulate();
+            simView.simulate(true);
 
         }
     }

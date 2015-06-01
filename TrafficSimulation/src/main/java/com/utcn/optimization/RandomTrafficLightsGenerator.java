@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class TrafficLightsOptimization {
+public class RandomTrafficLightsGenerator {
 
     public static final int MIN = 10;
     public static final int MAX = 30;

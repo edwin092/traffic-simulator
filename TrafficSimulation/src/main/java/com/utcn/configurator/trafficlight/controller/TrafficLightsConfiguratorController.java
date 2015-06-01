@@ -34,6 +34,7 @@ public class TrafficLightsConfiguratorController {
             }
 
             JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Save config file");
             fc.setCurrentDirectory(new File("."));
             fc.setAcceptAllFileFilterUsed(false);
             fc.showOpenDialog(null);

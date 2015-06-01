@@ -7,8 +7,10 @@ import com.utcn.configurator.flow.view.TrafficFlowGeneratorView;
 import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
 import com.utcn.configurator.trafficlight.view.TrafficLightsConfiguratorView;
 import com.utcn.controllers.TrafficSimulationController;
-import com.utcn.models.*;
-import com.utcn.optimization.GeneticAlgorithmOptimization;
+import com.utcn.models.Intersection;
+import com.utcn.models.Segment;
+import com.utcn.models.Vehicle;
+import com.utcn.optimization.geneticalgorithm.view.GeneticAlgorithmView;
 import com.utcn.statistics.IntersectionStatistics;
 import com.utcn.statistics.VehicleStatisticsManager;
 import com.utcn.utils.ImportExportHelper;
@@ -19,7 +21,6 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jgap.InvalidConfigurationException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -51,8 +52,8 @@ public class TrafficSimulationView {
     public static final int SIMULATION_TIME_DEFAULT = 200;
     public static final int GRID_SIZE_METERS = 500;
 
-    private int simulationStep = SIMULATION_STEP_DEFAULT;
-    private int simulationTime = SIMULATION_TIME_DEFAULT;
+    public static int SIMULATION_STEP = SIMULATION_STEP_DEFAULT;
+    public static int SIMULATION_TIME = SIMULATION_TIME_DEFAULT;
 
     private JFrame frame;
     private EnvironmentSetup environmentSetup;
@@ -130,7 +131,7 @@ public class TrafficSimulationView {
      */
     private void initialize() {
         frame = new JFrame();
-        frame.setBounds(100, 100, 1337, 715);
+        frame.setBounds(10, 10, 1337, 715);
         frame.setTitle("Traffic Simulation");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -241,6 +242,7 @@ public class TrafficSimulationView {
         addFlowConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle("Add config file");
                 FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter(
                         "JSON files (*.json)", "json");
                 fc.setFileFilter(jsonFilter);
@@ -286,6 +288,7 @@ public class TrafficSimulationView {
         addTLConfigMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle("Add config file");
                 FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter(
                         "JSON files (*.json)", "json");
                 fc.setFileFilter(jsonFilter);
@@ -327,10 +330,10 @@ public class TrafficSimulationView {
                         // Request simulation step from user
                         requestSimulationStep();
                         // update labels
-                        lblSimulationTime.setText(String.valueOf(simulationTime));
-                        lblStep.setText(String.valueOf(simulationStep));
+                        lblSimulationTime.setText(String.valueOf(SIMULATION_TIME));
+                        lblStep.setText(String.valueOf(SIMULATION_STEP));
                         // Start the simulation
-                        simulate();
+                        simulate(true);
 
                         return null;
                     }
@@ -419,7 +422,7 @@ public class TrafficSimulationView {
                 }
 
                 JFreeChart barChart = ChartFactory.createBarChart(
-                        "The Number of vehicles that passed an intersection during " + simulationTime,
+                        "The Number of vehicles that passed an intersection during " + SIMULATION_TIME,
                         "", "Number of vehicles",
                         dataset, PlotOrientation.VERTICAL,
                         true, true, false);
@@ -445,6 +448,7 @@ public class TrafficSimulationView {
         mnStatistics.add(mntmVehiclesInters);
         // End Statistics Menu
 
+        // Optimization Menu
         JMenu mnOptimization = new JMenu("Optimization");
         menuBar.add(mnOptimization);
 
@@ -452,16 +456,18 @@ public class TrafficSimulationView {
         mntmGA.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                requestSimulationTime();
-
-                try {
-                    GeneticAlgorithmOptimization.optimize(getTrafficSimulationViewInstance());
-                } catch (InvalidConfigurationException e1) {
-                    e1.printStackTrace();
+                if (trafficFlows == null) {
+                    JOptionPane.showMessageDialog(frame,
+                            "Please provide a traffic flow configuration file!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    new GeneticAlgorithmView(getTrafficSimulationViewInstance()).setVisible(true);
                 }
             }
         });
         mnOptimization.add(mntmGA);
+        // End Optimization Menu
 
         // Help Menu
         JMenu mnHelp = new JMenu("Help");
@@ -837,16 +843,16 @@ public class TrafficSimulationView {
      * Requests the simulation time from the user.
      */
     private void requestSimulationTime() {
-        simulationTime = 0;
+        SIMULATION_TIME = 0;
         do {
             String result = JOptionPane.showInputDialog(frame, "Enter simulation time:");
 
             try {
-                simulationTime = Integer.parseInt(result);
+                SIMULATION_TIME = Integer.parseInt(result);
             } catch (NumberFormatException ignored) {
                 // ignored exception
             }
-        } while (simulationTime == 0);
+        } while (SIMULATION_TIME == 0);
     }
 
     /**
@@ -867,16 +873,16 @@ public class TrafficSimulationView {
 
         switch (n) {
             case 0:
-                simulationStep = 1;
+                SIMULATION_STEP = 1;
                 break;
             case 1:
-                simulationStep = 5;
+                SIMULATION_STEP = 5;
                 break;
             case 2:
-                simulationStep = simulationTime;
+                SIMULATION_STEP = SIMULATION_TIME;
                 break;
             default:
-                simulationStep = SIMULATION_STEP_DEFAULT;
+                SIMULATION_STEP = SIMULATION_STEP_DEFAULT;
         }
     }
 
@@ -914,14 +920,15 @@ public class TrafficSimulationView {
     /**
      * Start the simulation.
      */
-    public synchronized void simulate() {
-        clearSimulationLogArea();
-        clearStatisticsArea();
-
+    public synchronized void simulate(boolean isViewEnabled) {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
 
-        addNewSimulationLogEntry("\nSimulation started at " + dateFormat.format(date) + "\n");
+        if (isViewEnabled) {
+            clearSimulationLogArea();
+            clearStatisticsArea();
+            addNewSimulationLogEntry("\nSimulation started at " + dateFormat.format(date) + "\n");
+        }
 
         // set phase time and order for intersections
         setPhaseTimeAndOrderForIntersections();
@@ -953,15 +960,11 @@ public class TrafficSimulationView {
                 }
             }
 
-            lblCounter.setText(String.valueOf(globalCounter));
-
-            vehicleLabels.clear();
-
-            for (int i = 0; i < simulationStep; i++) {
+            for (int i = 0; i < SIMULATION_STEP; i++) {
                 // check each flow
                 for (TrafficFlow trafficFlow : trafficFlows) {
                     // generate new vehicle
-                    Vehicle newVehicle = environmentSetup.generateVehicle(simulationGraph, trafficFlow);
+                    Vehicle newVehicle = environmentSetup.generateVehicle(simulationGraph, trafficFlow, isViewEnabled);
                     if (newVehicle != null) {
                         vehicleStatisticsManager.addNewVehicle(newVehicle.getId(), globalCounter);
                     }
@@ -983,61 +986,70 @@ public class TrafficSimulationView {
                 globalCounter++;
             }
 
-            for (Segment segment : segments) {
-                for (Vehicle veh : segment.getVehicles()) {
+            if (isViewEnabled) {
+                // take care of the drawing part
 
-                    // TODO not used in optimization
+                lblCounter.setText(String.valueOf(globalCounter));
+                vehicleLabels.clear();
+
+                for (Segment segment : segments) {
+                    for (Vehicle veh : segment.getVehicles()) {
+
+                        // TODO not used in optimization
 //                    JLabel lblO = new JLabel(String.valueOf(veh.getId()));
-                    JLabel lblO = new JLabel("O");
-                    // TODO move this into Vehicle entity
-                    lblO.setForeground(new Color(TrafficSimulationUtil.randInt(0, 255),
-                            TrafficSimulationUtil.randInt(0, 255),
-                            TrafficSimulationUtil.randInt(0, 255)));
+                        JLabel lblO = new JLabel("O");
+                        // TODO move this into Vehicle entity
+                        lblO.setForeground(new Color(TrafficSimulationUtil.randInt(0, 255),
+                                TrafficSimulationUtil.randInt(0, 255),
+                                TrafficSimulationUtil.randInt(0, 255)));
 
 
-                    int[] lineCoordsX = veh.getCurrentSegment()
-                            .getLineCoordsX();
-                    int[] lineCoordsY = veh.getCurrentSegment()
-                            .getLineCoordsY();
+                        int[] lineCoordsX = veh.getCurrentSegment()
+                                .getLineCoordsX();
+                        int[] lineCoordsY = veh.getCurrentSegment()
+                                .getLineCoordsY();
 
-                    int segSize = 0;
-                    for (int i = 0; i < lineCoordsX.length - 1; i++) {
+                        int segSize = 0;
+                        for (int i = 0; i < lineCoordsX.length - 1; i++) {
 
-                        segSize += TrafficSimulationUtil.distanceBetweenPoints(
-                                lineCoordsX[i], lineCoordsY[i],
-                                lineCoordsX[i + 1], lineCoordsY[i + 1]);
+                            segSize += TrafficSimulationUtil.distanceBetweenPoints(
+                                    lineCoordsX[i], lineCoordsY[i],
+                                    lineCoordsX[i + 1], lineCoordsY[i + 1]);
 
-                        double currentDistInPixels = TrafficSimulationUtil.convertMetersToPixels(veh.getCurrentDistance());
+                            double currentDistInPixels = TrafficSimulationUtil.convertMetersToPixels(veh.getCurrentDistance());
 
-                        if (currentDistInPixels <= segSize) {
-                            int[] newValues = TrafficSimulationUtil.getVehiclePosition(
-                                    lineCoordsX[i], lineCoordsY[i], lineCoordsX[i + 1], lineCoordsY[i + 1], currentDistInPixels);
+                            if (currentDistInPixels <= segSize) {
+                                int[] newValues = TrafficSimulationUtil.getVehiclePosition(
+                                        lineCoordsX[i], lineCoordsY[i], lineCoordsX[i + 1], lineCoordsY[i + 1], currentDistInPixels);
 
-                            lblO.setBounds(newValues[0], newValues[1], 15, 10);
+                                lblO.setBounds(newValues[0], newValues[1], 15, 10);
 
-                            vehicleLabels.add(lblO);
+                                vehicleLabels.add(lblO);
 
-                            panelSimulation.removeAll();
-                            panelSimulation.revalidate();
-                            panelSimulation.repaint();
+                                panelSimulation.removeAll();
+                                panelSimulation.revalidate();
+                                panelSimulation.repaint();
+                            }
                         }
                     }
                 }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());
+                }
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
-            }
-        } while (globalCounter < simulationTime);
+        } while (globalCounter < SIMULATION_TIME);
 
         System.out.println(vehicleStatisticsManager.getVehicleStatisticsList().size());
         System.out.println(vehicleStatisticsManager.getVehiclesAverageWaitingTime());
 
-        lblCounter.setText(String.valueOf(simulationTime));
-        addNewSimulationLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
-        // enable statistics only after simulation ends
-        mnStatistics.setEnabled(true);
+        if (isViewEnabled) {
+            lblCounter.setText(String.valueOf(SIMULATION_TIME));
+            addNewSimulationLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
+            // enable statistics only after simulation ends
+            mnStatistics.setEnabled(true);
+        }
     }
 
     /**
@@ -1539,22 +1551,6 @@ public class TrafficSimulationView {
 
     public List<Integer> getCurrentSegmentYCoords() {
         return segmentCoordsY.get(currentSegment);
-    }
-
-    public int getSimulationTime() {
-        return simulationTime;
-    }
-
-    public void setSimulationTime(int simulationTime) {
-        this.simulationTime = simulationTime;
-    }
-
-    public int getSimulationStep() {
-        return simulationStep;
-    }
-
-    public void setSimulationStep(int simulationStep) {
-        this.simulationStep = simulationStep;
     }
 
     public TrafficSimulationView getTrafficSimulationViewInstance() {
