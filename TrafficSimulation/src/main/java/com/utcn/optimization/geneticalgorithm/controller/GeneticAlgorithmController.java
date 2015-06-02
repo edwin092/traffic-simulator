@@ -29,6 +29,18 @@ public class GeneticAlgorithmController {
                 int simulationTime = Integer.valueOf(GeneticAlgorithmView.simTimeTextField.getText());
                 final int populationSize = Integer.valueOf(GeneticAlgorithmView.popSizeTextField.getText());
                 final int evolutions = Integer.valueOf(GeneticAlgorithmView.evolTextField.getText());
+                final int mutationRate = Integer.valueOf(GeneticAlgorithmView.mutationTextField.getText());
+                final double crossoverRate = Double.valueOf(GeneticAlgorithmView.crossoverTextField.getText());
+                final int tournamentSize = Integer.valueOf(GeneticAlgorithmView.tourSizeTextField.getText());
+                final double tournamentProbabity = Double.valueOf(GeneticAlgorithmView.tourProbTextField.getText());
+
+                if (tournamentProbabity < 0.0 || tournamentProbabity > 1.0) {
+                    JOptionPane.showMessageDialog(null,
+                            "Tournament selection probability must be in (0.0, 1.0]!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 TrafficSimulationView.SIMULATION_TIME = simulationTime;
 
@@ -49,8 +61,10 @@ public class GeneticAlgorithmController {
                     public Void doInBackground() {
                         List<TrafficLightPhases> phasesList = null;
                         try {
-                            phasesList =
-                                    GeneticAlgorithmOptimization.optimize(GeneticAlgorithmView.trafficSimulationView, populationSize, evolutions);
+                            // start optimization process
+                            phasesList = GeneticAlgorithmOptimization.optimize(
+                                    GeneticAlgorithmView.trafficSimulationView,
+                                    populationSize, evolutions, mutationRate, crossoverRate, tournamentSize, tournamentProbabity);
                         } catch (InvalidConfigurationException e1) {
                             e1.printStackTrace();
                         } finally {

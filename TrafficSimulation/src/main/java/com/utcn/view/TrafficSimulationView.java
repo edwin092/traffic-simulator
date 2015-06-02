@@ -429,11 +429,11 @@ public class TrafficSimulationView {
 
                 int width = 640; /* Width of the image */
                 int height = 480; /* Height of the image */
-                File BarChart = new File("BarChart.jpeg");
+                File BarChart = new File("VehPerIntersBarChart.jpeg");
                 try {
                     ChartUtilities.saveChartAsJPEG(BarChart, barChart, width, height);
 
-                    JLabel label = new JLabel(new ImageIcon("BarChart.jpeg"));
+                    JLabel label = new JLabel(new ImageIcon("VehPerIntersBarChart.jpeg"));
                     JFrame f = new JFrame();
                     f.setTitle("Vehicles per Intersection");
                     f.getContentPane().add(label);
