@@ -13,7 +13,7 @@ import java.util.List;
 
 public class MinimizingWaitingTimeFitnessFunction extends FitnessFunction {
 
-    private static final int BIG_NUMBER = 1000;
+    private static final int BIG_NUMBER = 10000;
 
     private TrafficSimulationView view;
 

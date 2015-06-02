@@ -899,9 +899,8 @@ public class TrafficSimulationView {
                                 trafficLightPhases.getPhase4Time()});
                     }
                 }
-//                intersection.setPhaseTimes(TrafficLightsOptimization.getRandomTimeList());
-//                intersection.setPhaseOrder(TrafficLightsOptimization.getRandomPhaseOrderList());
                 intersection.setPhaseOrder(new Integer[]{1, 2, 3, 4});
+                intersection.setPhaseCounter(0);
 
                 TrafficSimulationUtil.initIntersectionTrafficLights(intersection);
             } else {
@@ -945,6 +944,8 @@ public class TrafficSimulationView {
         for (Segment segment : segments) {
             segment.setVehicles(new ArrayList<Vehicle>());
         }
+        // reset vehicle ids
+        VehicleGenerator.currentId = 0;
 
         int globalCounter = 1;
 
