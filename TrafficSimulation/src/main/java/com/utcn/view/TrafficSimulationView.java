@@ -695,7 +695,7 @@ public class TrafficSimulationView {
         lblTLConfigFileText = new JLabel(NO_TL_CONFIG_FILE_MSG);
         lblTLConfigFileText.setFont(new Font("Tahoma", Font.BOLD, 11));
         lblTLConfigFileText.setForeground(Color.RED);
-        lblTLConfigFileText.setBounds(540, 9, 233, 14);
+        lblTLConfigFileText.setBounds(540, 9, 253, 14);
         frame.getContentPane().add(lblTLConfigFileText);
     }
 
@@ -1042,14 +1042,21 @@ public class TrafficSimulationView {
             }
         } while (globalCounter < SIMULATION_TIME);
 
-        System.out.println(vehicleStatisticsManager.getVehicleStatisticsList().size());
-        System.out.println(vehicleStatisticsManager.getVehiclesAverageWaitingTime());
-
         if (isViewEnabled) {
             lblCounter.setText(String.valueOf(SIMULATION_TIME));
             addNewSimulationLogEntry("\nSimulation finished at " + dateFormat.format(date) + "\n\n");
             // enable statistics only after simulation ends
             mnStatistics.setEnabled(true);
+
+            // show some statistics
+            addNewStatisticsLogEntry("\n\nNumber of vehicles generated: "
+                    + String.valueOf(vehicleStatisticsManager.getVehicleStatisticsList().size()));
+            addNewStatisticsLogEntry("\n\nNumber of vehicles that finished simulation: "
+                    + String.valueOf(vehicleStatisticsManager.getNumberOfVehiclesExited()));
+            addNewStatisticsLogEntry("\n\nFinished vehicles average waiting time: "
+                    + String.valueOf(vehicleStatisticsManager.getFinishedVehiclesAverageWaitingTime()));
+            addNewStatisticsLogEntry("\n\nAll vehicles average waiting time: "
+                    + String.valueOf(vehicleStatisticsManager.getAllVehiclesAverageWaitingTime()));
         }
     }
 

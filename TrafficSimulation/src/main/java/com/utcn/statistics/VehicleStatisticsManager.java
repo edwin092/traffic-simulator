@@ -51,12 +51,33 @@ public class VehicleStatisticsManager {
         return sum / vehicleStatisticsList.size();
     }
 
-    public float getVehiclesAverageWaitingTime() {
+    /**
+     * @return
+     */
+    public float getAllVehiclesAverageWaitingTime() {
         int sum = 0;
         for (VehicleStatistics vehicleStatistics : vehicleStatisticsList) {
             sum += vehicleStatistics.getWaitingTime();
         }
         return sum / vehicleStatisticsList.size();
+    }
+
+    /**
+     * @return
+     */
+    public float getFinishedVehiclesAverageWaitingTime() {
+        List<VehicleStatistics> finishedVehicles = new ArrayList<>();
+        for (VehicleStatistics vehicleStatistics : vehicleStatisticsList) {
+            if (vehicleStatistics.getEndTime() != 0) {
+                finishedVehicles.add(vehicleStatistics);
+            }
+        }
+
+        int sum = 0;
+        for (VehicleStatistics vehicleStatistics : finishedVehicles) {
+            sum += vehicleStatistics.getWaitingTime();
+        }
+        return sum / finishedVehicles.size();
     }
 
     public List<VehicleStatistics> getVehicleStatisticsList() {

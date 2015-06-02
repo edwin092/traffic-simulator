@@ -58,6 +58,6 @@ public class MinimizingWaitingTimeFitnessFunction extends FitnessFunction {
         // start simulation
         view.simulate(false);
 
-        return BIG_NUMBER - view.getVehicleStatisticsManager().getVehiclesAverageWaitingTime();
+        return BIG_NUMBER - view.getVehicleStatisticsManager().getFinishedVehiclesAverageWaitingTime();
     }
 }
