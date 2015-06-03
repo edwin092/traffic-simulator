@@ -8,13 +8,15 @@ import com.utcn.configurator.flow.view.TrafficFlowGeneratorView;
 import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
 import com.utcn.configurator.trafficlight.view.TrafficLightsConfiguratorView;
 import com.utcn.controllers.TrafficSimulationController;
+import com.utcn.importexport.environment.EnvironmentImportExport;
+import com.utcn.importexport.flow.FlowImportExport;
+import com.utcn.importexport.trafficlight.TrafficLightImportExport;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
 import com.utcn.optimization.geneticalgorithm.view.GeneticAlgorithmView;
 import com.utcn.statistics.IntersectionStatistics;
 import com.utcn.statistics.VehicleStatisticsManager;
-import com.utcn.utils.ImportExportHelper;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
 import org.jfree.chart.ChartFactory;
@@ -154,7 +156,7 @@ public class TrafficSimulationView {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = ImportExportHelper.exportEnvironmentToJSON(fc.getSelectedFile().getPath(),
+                    boolean res = EnvironmentImportExport.exportToJSON(fc.getSelectedFile().getPath(),
                             getTrafficSimulationViewInstance());
 
                     if (!res) {
@@ -179,7 +181,7 @@ public class TrafficSimulationView {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = ImportExportHelper.importEnvironmentFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                    boolean res = EnvironmentImportExport.importFromJSON(fc.getSelectedFile().getAbsolutePath(),
                             getTrafficSimulationViewInstance());
                     if (!res) {
                         JOptionPane.showMessageDialog(frame,
@@ -251,7 +253,7 @@ public class TrafficSimulationView {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = ImportExportHelper.importFlowFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                    boolean res = FlowImportExport.importFromJSON(fc.getSelectedFile().getAbsolutePath(),
                             getTrafficSimulationViewInstance());
                     if (res) {
                         lblFlowConfigFileText.setText(FLOW_CONFIG_FILE_LOADED_MSG.replace("NAME", fc.getSelectedFile().getName()));
@@ -297,7 +299,7 @@ public class TrafficSimulationView {
                 fc.showOpenDialog(null);
 
                 if (fc.getSelectedFile() != null) {
-                    boolean res = ImportExportHelper.importTrafficLightsConfigFromJSON(fc.getSelectedFile().getAbsolutePath(),
+                    boolean res = TrafficLightImportExport.importFromJSON(fc.getSelectedFile().getAbsolutePath(),
                             getTrafficSimulationViewInstance());
                     if (res) {
                         lblTLConfigFileText.setText(TL_CONFIG_FILE_LOADED_MSG.replace("NAME", fc.getSelectedFile().getName()));

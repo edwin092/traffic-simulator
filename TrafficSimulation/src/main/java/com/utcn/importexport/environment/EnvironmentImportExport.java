@@ -1,39 +1,69 @@
-package com.utcn.utils;
+package com.utcn.importexport.environment;
 
-import com.utcn.configurator.flow.model.TrafficFlow;
-import com.utcn.configurator.flow.utils.TrafficFlowGeneratorUtil;
-import com.utcn.configurator.trafficlight.model.TrafficLightPhases;
-import com.utcn.configurator.trafficlight.utils.TrafficLightsConfiguratorUtil;
 import com.utcn.models.Intersection;
 import com.utcn.models.Segment;
+import com.utcn.utils.TrafficSimulationUtil;
 import com.utcn.view.TrafficSimulationView;
+import org.codehaus.jackson.map.ObjectMapper;
 
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
-public class ImportExportHelper {
+public class EnvironmentImportExport {
 
     /**
      * Export simulation environment to a JSON file.
      */
-    public static boolean exportEnvironmentToJSON(String filepath, TrafficSimulationView view) {
+    public static boolean exportToJSON(String filepath, TrafficSimulationView view) {
 
-        return TrafficSimulationUtil.exportEnvironmentToJSON(filepath, convertToCustomImportExportClass(view));
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            if (!filepath.contains(".json")) {
+                filepath += ".json";
+            }
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(filepath), convertToCustomImportExportClass(view));
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Import an already existing simulation environment.
+     */
+    public static boolean importFromJSON(String filepath, TrafficSimulationView view) {
+        ObjectMapper mapper = new ObjectMapper();
+        CustomEnvironment customEnvironment;
+        try {
+            customEnvironment = mapper.readValue(new File(filepath), CustomEnvironment.class);
+        } catch (IOException e) {
+            customEnvironment = null;
+        }
+
+        if (customEnvironment != null) {
+            convertFromCustomImportExportClass(customEnvironment, view);
+
+            return true;
+        }
+        return false;
     }
 
     /**
      * Create a custom object for the export method.
      */
-    private static CustomImportExportClass convertToCustomImportExportClass(TrafficSimulationView view) {
-        CustomImportExportClass customImportExportClass = new CustomImportExportClass();
+    private static CustomEnvironment convertToCustomImportExportClass(TrafficSimulationView view) {
+        CustomEnvironment customEnvironment = new CustomEnvironment();
 
-        customImportExportClass.setCurrentSegId(view.getCurrentSegId());
-        customImportExportClass.setCurrentIntersId(view.getCurrentIntersId());
-        customImportExportClass.setCurrentSegment(view.getCurrentSegment());
-        customImportExportClass.setSegmentCoordsX(view.getSegmentCoordsX());
-        customImportExportClass.setSegmentCoordsY(view.getSegmentCoordsY());
+        customEnvironment.setCurrentSegId(view.getCurrentSegId());
+        customEnvironment.setCurrentIntersId(view.getCurrentIntersId());
+        customEnvironment.setCurrentSegment(view.getCurrentSegment());
+        customEnvironment.setSegmentCoordsX(view.getSegmentCoordsX());
+        customEnvironment.setSegmentCoordsY(view.getSegmentCoordsY());
 
         for (Intersection intersection : view.getIntersections()) {
-            CustomImportExportClass.CustomIntersection customIntersection = new CustomImportExportClass.CustomIntersection();
+            CustomEnvironment.CustomIntersection customIntersection = new CustomEnvironment.CustomIntersection();
 
             customIntersection.setId(intersection.getId());
 
@@ -49,48 +79,34 @@ public class ImportExportHelper {
             customIntersection.setX(intersection.getX());
             customIntersection.setY(intersection.getY());
 
-            customImportExportClass.getIntersections().add(customIntersection);
+            customEnvironment.getIntersections().add(customIntersection);
         }
 
         for (Segment segment : view.getSegments()) {
-            CustomImportExportClass.CustomSegment customSegment = new CustomImportExportClass.CustomSegment();
+            CustomEnvironment.CustomSegment customSegment = new CustomEnvironment.CustomSegment();
 
             customSegment.setId(segment.getId());
             customSegment.setIntersectionInId(segment.getIntersectionFrom().getId());
             customSegment.setIntersectionOutId(segment.getIntersectionTo().getId());
 
-            customImportExportClass.getSegments().add(customSegment);
+            customEnvironment.getSegments().add(customSegment);
         }
 
-        return customImportExportClass;
-    }
-
-    /**
-     * Import an already existing simulation environment.
-     */
-    public static boolean importEnvironmentFromJSON(String filepath, TrafficSimulationView view) {
-        CustomImportExportClass customImportExportClass = TrafficSimulationUtil.importEnvironmentFromJSON(filepath);
-
-        if (customImportExportClass != null) {
-            convertFromCustomImportExportClass(customImportExportClass, view);
-
-            return true;
-        }
-        return false;
+        return customEnvironment;
     }
 
     /**
      * Create simulation environment from custom object.
      */
-    private static void convertFromCustomImportExportClass(CustomImportExportClass customImportExportClass, TrafficSimulationView view) {
-        view.setCurrentSegId(customImportExportClass.getCurrentSegId());
-        view.setCurrentIntersId(customImportExportClass.getCurrentIntersId());
-        view.setCurrentSegment(customImportExportClass.getCurrentSegment());
-        view.setSegmentCoordsX(customImportExportClass.getSegmentCoordsX());
-        view.setSegmentCoordsY(customImportExportClass.getSegmentCoordsY());
+    private static void convertFromCustomImportExportClass(CustomEnvironment customEnvironment, TrafficSimulationView view) {
+        view.setCurrentSegId(customEnvironment.getCurrentSegId());
+        view.setCurrentIntersId(customEnvironment.getCurrentIntersId());
+        view.setCurrentSegment(customEnvironment.getCurrentSegment());
+        view.setSegmentCoordsX(customEnvironment.getSegmentCoordsX());
+        view.setSegmentCoordsY(customEnvironment.getSegmentCoordsY());
 
         // generate intersections without segments
-        for (CustomImportExportClass.CustomIntersection customIntersection : customImportExportClass.getIntersections()) {
+        for (CustomEnvironment.CustomIntersection customIntersection : customEnvironment.getIntersections()) {
             Intersection intersection = new Intersection();
 
             intersection.setId(customIntersection.getId());
@@ -103,14 +119,14 @@ public class ImportExportHelper {
         }
 
         // generate segments
-        for (CustomImportExportClass.CustomSegment customSegment : customImportExportClass.getSegments()) {
+        for (CustomEnvironment.CustomSegment customSegment : customEnvironment.getSegments()) {
             Segment segment = new Segment();
 
             segment.setId(customSegment.getId());
 
 
-            int[] coordsX = TrafficSimulationUtil.convertList(customImportExportClass.getSegmentCoordsX().get(customSegment.getId()));
-            int[] coordsY = TrafficSimulationUtil.convertList(customImportExportClass.getSegmentCoordsY().get(customSegment.getId()));
+            int[] coordsX = TrafficSimulationUtil.convertList(customEnvironment.getSegmentCoordsX().get(customSegment.getId()));
+            int[] coordsY = TrafficSimulationUtil.convertList(customEnvironment.getSegmentCoordsY().get(customSegment.getId()));
 
             segment.setLineCoordsX(coordsX);
             segment.setLineCoordsY(coordsY);
@@ -127,7 +143,7 @@ public class ImportExportHelper {
         }
 
         // add segments to intersections
-        for (CustomImportExportClass.CustomIntersection customIntersection : customImportExportClass.getIntersections()) {
+        for (CustomEnvironment.CustomIntersection customIntersection : customEnvironment.getIntersections()) {
             for (Intersection intersection : view.getIntersections()) {
                 if (intersection.getId() == customIntersection.getId()) {
 
@@ -154,33 +170,5 @@ public class ImportExportHelper {
                 }
             }
         }
-    }
-
-    /**
-     * Import traffic flows.
-     */
-    public static boolean importFlowFromJSON(String filepath, TrafficSimulationView view) {
-        List<TrafficFlow> trafficFlows = TrafficFlowGeneratorUtil.importFromJSON(filepath);
-
-        if (trafficFlows == null || trafficFlows.isEmpty()) {
-            return false;
-        }
-
-        view.setTrafficFlows(trafficFlows);
-        return true;
-    }
-
-    /**
-     * Import traffic lights config.
-     */
-    public static boolean importTrafficLightsConfigFromJSON(String filepath, TrafficSimulationView view) {
-        List<TrafficLightPhases> trafficLightPhases = TrafficLightsConfiguratorUtil.importFromJSON(filepath);
-
-        if (trafficLightPhases == null || trafficLightPhases.isEmpty()) {
-            return false;
-        }
-
-        view.setTrafficLightPhaseses(trafficLightPhases);
-        return true;
     }
 }

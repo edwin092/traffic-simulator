@@ -2,10 +2,7 @@ package com.utcn.utils;
 
 import com.utcn.models.Intersection;
 import com.utcn.view.TrafficSimulationView;
-import org.codehaus.jackson.map.ObjectMapper;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -151,41 +148,6 @@ public class TrafficSimulationUtil {
         int yN = Math.abs((int) (bigOrSmallY + dyN));
 
         return new int[]{xN, yN};
-    }
-
-    /**
-     * Export simulation environment to a JSON file.
-     */
-    public static boolean exportEnvironmentToJSON(String filepath, CustomImportExportClass customExportClasss) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            if (!filepath.contains(".json")) {
-                filepath += ".json";
-            }
-            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(filepath), customExportClasss);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Import an already existing simulation environment.
-     */
-    public static CustomImportExportClass importEnvironmentFromJSON(String filepath) {
-        ObjectMapper mapper = new ObjectMapper();
-        CustomImportExportClass customImportExportClass;
-
-        try {
-            customImportExportClass = mapper.readValue(new File(filepath), CustomImportExportClass.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return customImportExportClass;
     }
 
     /**

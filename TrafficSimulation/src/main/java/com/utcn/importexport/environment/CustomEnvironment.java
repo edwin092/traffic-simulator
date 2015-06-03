@@ -1,4 +1,4 @@
-package com.utcn.utils;
+package com.utcn.importexport.environment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  *
  */
-public class CustomImportExportClass {
+public class CustomEnvironment {
 
     private int currentSegment = 1;
     private int currentSegId = 1;
