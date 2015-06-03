@@ -9,22 +9,34 @@ import java.util.List;
  *
  */
 public class Vehicle {
-
+    // size of a vehicle
     public static final double SIZE = 3;
 
+    // if of the vehicle
     private int id;
+    // destination point
     private Segment destination;
+    // the route list
     private List<Segment> routeList;
+    // the current segment of the vehicle
     private Segment currentSegment;
-    private double currentDistance; // distanta parcursa pe tronsonul curent
+    // current distance on the segment
+    private double currentDistance;
+    // distance to next obstacle
     private double distanceToObstacle;
+    // current speed
     private double speed;
+    // the engine of the vehicle
     private Engine engine;
     // the size of the vehicle
     private double size;
 
     public Vehicle() {
         routeList = new ArrayList<>();
+    }
+
+    public double accelerate() {
+        return this.engine.accelerate(this);
     }
 
     public Segment getDestination() {
@@ -97,12 +109,5 @@ public class Vehicle {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    /**
-     * @return
-     */
-    public double accelerate() {
-        return this.engine.accelerate(this);
     }
 }

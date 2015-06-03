@@ -6,50 +6,26 @@ import com.utcn.utils.TrafficSimulationUtil;
 import com.utcn.view.TrafficSimulationView;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
 
+/**
+ *
+ */
 public class TrafficSimulationController {
 
     private TrafficSimulationView simView;
 
     public TrafficSimulationController(TrafficSimulationView simView) {
         this.simView = simView;
-
         simView.addMouseClickListener(new MouseClickListener());
-
-        // TODO
-        // not working with swingWorker
-        // simView.addSimulationStartListener(new SimulationStartListener());
     }
 
     class MouseClickListener implements MouseListener {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-//			simView.setxClick(e.getX());
-//			simView.setyClick(e.getY());
-//
-//			/* SEGMENT SELECTED */
-//			if (simView.isSegmentSelected()) {
-//
-//				checkSegmentClick();
-//
-//				simView.getPanelSimulation().repaint();
-//			}
-//
-//			/* INTERSECTION SELECTED */
-//			if (simView.isIntersectionSelected()) {
-//
-//				checkIntersectionClick();
-//
-//				simView.getPanelSimulation().repaint();
-//				simView.setIntersectionSelected(false);
-//			}
         }
 
         @Override
@@ -87,7 +63,9 @@ public class TrafficSimulationController {
         }
 
         /**
-         * @return
+         * Get first selected intersection.
+         *
+         * @return first selected intersection
          */
         private Intersection getFirstSelectedIntersection() {
             for (Intersection intersection : simView.getIntersections()) {
@@ -99,7 +77,7 @@ public class TrafficSimulationController {
         }
 
         /**
-         *
+         * Set all segments selected to false.
          */
         private void resetAllSegments() {
             for (Intersection intersection : simView.getIntersections()) {
@@ -476,83 +454,9 @@ public class TrafficSimulationController {
                     TrafficSimulationView.INTERSECTION_SIZE,
                     TrafficSimulationView.INTERSECTION_SIZE);
             simView.getIntersections().add(intersection);
-//            simView.getPanelSimulation().add(intersection);
 
             simView.getPanelSimulation().repaint();
-
-//            simView.getPanelSimulation().setComponentZOrder(intersection, 0);
         }
 
-    }
-
-    class SimulationStartListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
-            // Add traffic lights to intersections
-            for (Intersection intersection : simView.getIntersections()) {
-                // NORTH
-//                if (intersection.getSegmentNorthIn() != null) {
-                JTextField trafficLight = new JTextField();
-                trafficLight.setBackground(Color.RED);
-                trafficLight.setEditable(false);
-                trafficLight.setBounds(intersection.getX(),
-                        intersection.getY() - 20,
-                        TrafficSimulationView.TRAFFIC_LIGHT_SIZE,
-                        TrafficSimulationView.TRAFFIC_LIGHT_SIZE);
-                simView.getPanelSimulation().add(trafficLight);
-
-                simView.getPanelSimulation().repaint();
-//                }
-                // SOUTH
-//                if (intersection.getSegmentSouthIn() != null) {
-                JTextField trafficLight2 = new JTextField();
-                trafficLight2.setBackground(Color.RED);
-                trafficLight2.setEditable(false);
-                trafficLight2.setBounds(
-                        intersection.getX() + intersection.getWidth() - 15,
-                        intersection.getY() + intersection.getHeight() + 7,
-                        TrafficSimulationView.TRAFFIC_LIGHT_SIZE,
-                        TrafficSimulationView.TRAFFIC_LIGHT_SIZE);
-                simView.getPanelSimulation().add(trafficLight2);
-
-                simView.getPanelSimulation().repaint();
-//                }
-                // VEST
-//                if (intersection.getSegmentVestIn() != null) {
-                JTextField trafficLight3 = new JTextField();
-                trafficLight3.setBackground(Color.RED);
-                trafficLight3.setEditable(false);
-                trafficLight3
-                        .setBounds(
-                                intersection.getX() - 20,
-                                intersection.getY()
-                                        + intersection.getHeight() - 15,
-                                TrafficSimulationView.TRAFFIC_LIGHT_SIZE,
-                                TrafficSimulationView.TRAFFIC_LIGHT_SIZE);
-                simView.getPanelSimulation().add(trafficLight3);
-
-                simView.getPanelSimulation().repaint();
-//                }
-                // EAST
-//                if (intersection.getSegmentEastIn() != null) {
-                JTextField trafficLight4 = new JTextField();
-                trafficLight4.setBackground(Color.RED);
-                trafficLight4.setEditable(false);
-                trafficLight4.setBounds(
-                        intersection.getX() + intersection.getWidth() + 7,
-                        intersection.getY(),
-                        TrafficSimulationView.TRAFFIC_LIGHT_SIZE,
-                        TrafficSimulationView.TRAFFIC_LIGHT_SIZE);
-                simView.getPanelSimulation().add(trafficLight4);
-
-                simView.getPanelSimulation().repaint();
-//                }
-            }
-
-            simView.simulate(true);
-
-        }
     }
 }

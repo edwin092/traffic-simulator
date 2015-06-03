@@ -4,6 +4,9 @@ package com.utcn.bl;
 import com.utcn.models.StandardEngine;
 import com.utcn.models.Vehicle;
 
+/**
+ *
+ */
 public class VehicleGenerator {
 
     public static int currentId;

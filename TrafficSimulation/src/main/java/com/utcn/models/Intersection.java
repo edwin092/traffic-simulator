@@ -2,34 +2,32 @@ package com.utcn.models;
 
 import javax.swing.*;
 
+/**
+ *
+ */
 public class Intersection extends JButton {
-
     private static final long serialVersionUID = 1L;
-
+    // id of intersection
     private int id;
 
-    // semafoare din intersectie: true-verde, false-rosu
-    private boolean trafficLightNorth;
-    private boolean trafficLightSouth;
-    private boolean trafficLightVest;
-    private boolean trafficLightEast;
-
-    // semafoare din intersectie: true-verde, false-rosu
-    // 0 - left, 1 - straight, 2 - right
+    // intersection traffic lights
+    // true-green, false-red
+    // position 0 - left, position 1 - straight, position 2 - right
     private boolean[] trafficLightsNorth = new boolean[]{false, true, true};
     private boolean[] trafficLightsSouth = new boolean[]{false, true, true};
     private boolean[] trafficLightsVest = new boolean[]{false, false, false};
     private boolean[] trafficLightsEast = new boolean[]{false, false, false};
 
-    /* phases */
-    private int phases = 4; // 4 phases
+    // phases
+    private int numberOfPhases = 4;
     private int currentPhase = 1;
     private int phaseCounter;
-
+    // phase times
     private int[] phaseTimes;
+    // phase order
     private Integer[] phaseOrder;
 
-    /* segments */
+    // segments
     private Segment segmentNorthIn;
     private Segment segmentNorthOut;
     private Segment segmentSouthIn;
@@ -39,11 +37,177 @@ public class Intersection extends JButton {
     private Segment segmentEastIn;
     private Segment segmentEastOut;
 
-    /* needed in view */
+    // segments selected in View
     private boolean segmentNorthSelected;
     private boolean segmentSouthSelected;
     private boolean segmentEastSelected;
     private boolean segmentVestSelected;
+
+    /**
+     * Switch to the next phase from list.
+     */
+    public void nextPhase() {
+        if (currentPhase == numberOfPhases) {
+            currentPhase = 1;
+        } else {
+            currentPhase++;
+        }
+    }
+
+    /**
+     * Check if any of the 4 segments (north, vest, east, south) is selected.
+     *
+     * @return true if one of he segments is selected
+     */
+    public boolean isAnySegmentSelected() {
+        return segmentVestSelected || segmentEastSelected
+                || segmentNorthSelected || segmentSouthSelected;
+    }
+
+    /**
+     * Set all segments selected to false.
+     */
+    public void setAllSegmentsFalse() {
+        segmentEastSelected = false;
+        segmentVestSelected = false;
+        segmentNorthSelected = false;
+        segmentSouthSelected = false;
+    }
+
+    /**
+     * Get direction from one segment to another.
+     *
+     * @return 0 - left, 1 - straight, 2 - right
+     */
+    public int getDirection(Segment currentSeg, Segment nextSeg) {
+
+        if (segmentEastIn != null && segmentEastIn.getId() == currentSeg.getId()) {
+            // EAST
+            if (segmentNorthOut != null && segmentNorthOut.getId() == nextSeg.getId()) {
+                // right
+                return 2;
+            }
+            if (segmentVestOut != null && segmentVestOut.getId() == nextSeg.getId()) {
+                // straight
+                return 1;
+            }
+            if (segmentSouthOut != null && segmentSouthOut.getId() == nextSeg.getId()) {
+                // left
+                return 0;
+            }
+        } else if (segmentVestIn != null && segmentVestIn.getId() == currentSeg.getId()) {
+            // VEST
+            if (segmentNorthOut != null && segmentNorthOut.getId() == nextSeg.getId()) {
+                return 0;
+            }
+            if (segmentEastOut != null && segmentEastOut.getId() == nextSeg.getId()) {
+                return 1;
+            }
+            if (segmentSouthOut != null && segmentSouthOut.getId() == nextSeg.getId()) {
+                return 2;
+            }
+        } else if (segmentNorthIn != null && segmentNorthIn.getId() == currentSeg.getId()) {
+            // NORTH
+            if (segmentEastOut != null && segmentEastOut.getId() == nextSeg.getId()) {
+                return 2;
+            }
+            if (segmentVestOut != null && segmentVestOut.getId() == nextSeg.getId()) {
+                return 0;
+            }
+            if (segmentSouthOut != null && segmentSouthOut.getId() == nextSeg.getId()) {
+                return 1;
+            }
+        } else {
+            // SOUTH
+            if (segmentNorthOut != null && segmentNorthOut.getId() == nextSeg.getId()) {
+                return 1;
+            }
+            if (segmentVestOut != null && segmentVestOut.getId() == nextSeg.getId()) {
+                return 0;
+            }
+            if (segmentEastOut != null && segmentEastOut.getId() == nextSeg.getId()) {
+                return 2;
+            }
+        }
+
+        throw new NullPointerException("Segments missing!");
+    }
+
+    /**
+     * Checks if intersection has 4 numberOfPhases.
+     */
+    public boolean isFourPhased() {
+        int nOfSegments = 0;
+
+        if (segmentEastIn != null) {
+            nOfSegments++;
+        }
+        if (segmentEastOut != null) {
+            nOfSegments++;
+        }
+        if (segmentVestIn != null) {
+            nOfSegments++;
+        }
+        if (segmentVestOut != null) {
+            nOfSegments++;
+        }
+        if (segmentNorthIn != null) {
+            nOfSegments++;
+        }
+        if (segmentNorthOut != null) {
+            nOfSegments++;
+        }
+        if (segmentSouthIn != null) {
+            nOfSegments++;
+        }
+        if (segmentSouthOut != null) {
+            nOfSegments++;
+        }
+
+        return nOfSegments >= 6;
+    }
+
+    /**
+     * Sets all lights from intersection to true.
+     */
+    public void setAllLightsTrue() {
+        trafficLightsNorth = new boolean[]{true, true, true};
+        trafficLightsSouth = new boolean[]{true, true, true};
+        trafficLightsVest = new boolean[]{true, true, true};
+        trafficLightsEast = new boolean[]{true, true, true};
+    }
+
+    /**
+     * Get number of segments connected to intersection.
+     */
+    public int getSegmentsNumber() {
+        int k = 0;
+        if (segmentEastIn != null) {
+            k++;
+        }
+        if (segmentEastOut != null) {
+            k++;
+        }
+        if (segmentVestIn != null) {
+            k++;
+        }
+        if (segmentVestOut != null) {
+            k++;
+        }
+        if (segmentNorthIn != null) {
+            k++;
+        }
+        if (segmentNorthOut != null) {
+            k++;
+        }
+        if (segmentSouthIn != null) {
+            k++;
+        }
+        if (segmentSouthOut != null) {
+            k++;
+        }
+        return k;
+    }
 
     public int getId() {
         return id;
@@ -51,38 +215,6 @@ public class Intersection extends JButton {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public boolean isTrafficLightNorth() {
-        return trafficLightNorth;
-    }
-
-    public void setTrafficLightNorth(boolean trafficLightNorth) {
-        this.trafficLightNorth = trafficLightNorth;
-    }
-
-    public boolean isTrafficLightSouth() {
-        return trafficLightSouth;
-    }
-
-    public void setTrafficLightSouth(boolean trafficLightSouth) {
-        this.trafficLightSouth = trafficLightSouth;
-    }
-
-    public boolean isTrafficLightVest() {
-        return trafficLightVest;
-    }
-
-    public void setTrafficLightVest(boolean trafficLightVest) {
-        this.trafficLightVest = trafficLightVest;
-    }
-
-    public boolean isTrafficLightEast() {
-        return trafficLightEast;
-    }
-
-    public void setTrafficLightEast(boolean trafficLightEast) {
-        this.trafficLightEast = trafficLightEast;
     }
 
     public Segment getSegmentNorthIn() {
@@ -149,10 +281,6 @@ public class Intersection extends JButton {
         this.segmentEastOut = segmentEastOut;
     }
 
-    public static long getSerialversionuid() {
-        return serialVersionUID;
-    }
-
     public int getPhaseCounter() {
         return phaseCounter;
     }
@@ -161,12 +289,12 @@ public class Intersection extends JButton {
         this.phaseCounter = phaseCounter;
     }
 
-    public int getPhases() {
-        return phases;
+    public int getNumberOfPhases() {
+        return numberOfPhases;
     }
 
-    public void setPhases(int phases) {
-        this.phases = phases;
+    public void setNumberOfPhases(int numberOfPhases) {
+        this.numberOfPhases = numberOfPhases;
     }
 
     public boolean isSegmentNorthSelected() {
@@ -255,171 +383,5 @@ public class Intersection extends JButton {
 
     public void setPhaseOrder(Integer[] phaseOrder) {
         this.phaseOrder = phaseOrder;
-    }
-
-    /**
-     * Switch to the next phase from list.
-     */
-    public void nextPhase() {
-        if (currentPhase == phases) {
-            currentPhase = 1;
-        } else {
-            currentPhase++;
-        }
-    }
-
-    /**
-     * Check if any of the 4 segments (north, vest, east, south) is selected
-     *
-     * @return true if one of he segments is selected
-     */
-    public boolean isAnySegmentSelected() {
-        return segmentVestSelected || segmentEastSelected
-                || segmentNorthSelected || segmentSouthSelected;
-    }
-
-    /**
-     * Set all segments selected false
-     */
-    public void setAllSegmentsFalse() {
-        segmentEastSelected = false;
-        segmentVestSelected = false;
-        segmentNorthSelected = false;
-        segmentSouthSelected = false;
-    }
-
-    /**
-     * @param currentSeg
-     * @param nextSeg
-     * @return
-     */
-    public int getDirection(Segment currentSeg, Segment nextSeg) {
-
-        if (segmentEastIn != null && segmentEastIn.getId() == currentSeg.getId()) {
-            // EAST
-            if (segmentNorthOut != null && segmentNorthOut.getId() == nextSeg.getId()) {
-                // right
-                return 2;
-            }
-            if (segmentVestOut != null && segmentVestOut.getId() == nextSeg.getId()) {
-                // straight
-                return 1;
-            }
-            if (segmentSouthOut != null && segmentSouthOut.getId() == nextSeg.getId()) {
-                // left
-                return 0;
-            }
-        } else if (segmentVestIn != null && segmentVestIn.getId() == currentSeg.getId()) {
-            // VEST
-            if (segmentNorthOut != null && segmentNorthOut.getId() == nextSeg.getId()) {
-                return 0;
-            }
-            if (segmentEastOut != null && segmentEastOut.getId() == nextSeg.getId()) {
-                return 1;
-            }
-            if (segmentSouthOut != null && segmentSouthOut.getId() == nextSeg.getId()) {
-                return 2;
-            }
-        } else if (segmentNorthIn != null && segmentNorthIn.getId() == currentSeg.getId()) {
-            // NORTH
-            if (segmentEastOut != null && segmentEastOut.getId() == nextSeg.getId()) {
-                return 2;
-            }
-            if (segmentVestOut != null && segmentVestOut.getId() == nextSeg.getId()) {
-                return 0;
-            }
-            if (segmentSouthOut != null && segmentSouthOut.getId() == nextSeg.getId()) {
-                return 1;
-            }
-        } else {
-            // SOUTH
-            if (segmentNorthOut != null && segmentNorthOut.getId() == nextSeg.getId()) {
-                return 1;
-            }
-            if (segmentVestOut != null && segmentVestOut.getId() == nextSeg.getId()) {
-                return 0;
-            }
-            if (segmentEastOut != null && segmentEastOut.getId() == nextSeg.getId()) {
-                return 2;
-            }
-        }
-
-        throw new NullPointerException("Segments missing!");
-    }
-
-    /**
-     * Checks if intersection has 4 phases.
-     */
-    public boolean isFourPhased() {
-        int nOfSegments = 0;
-
-        if (segmentEastIn != null) {
-            nOfSegments++;
-        }
-        if (segmentEastOut != null) {
-            nOfSegments++;
-        }
-        if (segmentVestIn != null) {
-            nOfSegments++;
-        }
-        if (segmentVestOut != null) {
-            nOfSegments++;
-        }
-        if (segmentNorthIn != null) {
-            nOfSegments++;
-        }
-        if (segmentNorthOut != null) {
-            nOfSegments++;
-        }
-        if (segmentSouthIn != null) {
-            nOfSegments++;
-        }
-        if (segmentSouthOut != null) {
-            nOfSegments++;
-        }
-
-        return nOfSegments >= 6 ? true : false;
-    }
-
-    /**
-     *
-     */
-    public void setAllLightsTrue() {
-        trafficLightsNorth = new boolean[]{true, true, true};
-        trafficLightsSouth = new boolean[]{true, true, true};
-        trafficLightsVest = new boolean[]{true, true, true};
-        trafficLightsEast = new boolean[]{true, true, true};
-    }
-
-    /**
-     * maybe use isFourPhased
-     */
-    public int getSegmentsNumber() {
-        int k = 0;
-        if (segmentEastIn != null) {
-            k++;
-        }
-        if (segmentEastOut != null) {
-            k++;
-        }
-        if (segmentVestIn != null) {
-            k++;
-        }
-        if (segmentVestOut != null) {
-            k++;
-        }
-        if (segmentNorthIn != null) {
-            k++;
-        }
-        if (segmentNorthOut != null) {
-            k++;
-        }
-        if (segmentSouthIn != null) {
-            k++;
-        }
-        if (segmentSouthOut != null) {
-            k++;
-        }
-        return k;
     }
 }

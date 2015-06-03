@@ -1,4 +1,4 @@
-package com.utcn.application;
+package com.utcn.utils;
 
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;

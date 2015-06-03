@@ -1,8 +1,6 @@
 package com.utcn.statistics;
 
 
-import com.utcn.statistics.IntersectionStatistics;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +13,9 @@ public class IntersectionStatisticsManager {
     }
 
     /**
+     * Increments the number of vehicles that passed current intersection.
      *
-     * @param intersectionId
+     * @param intersectionId the id of the intersection.
      */
     public void addNewVehPassedIntersection(int intersectionId) {
         if (intersectionStatisticsList.contains(new IntersectionStatistics(intersectionId))) {
