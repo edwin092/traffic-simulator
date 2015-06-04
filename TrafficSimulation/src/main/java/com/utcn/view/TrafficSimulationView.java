@@ -147,7 +147,7 @@ public class TrafficSimulationView {
         JMenu mnFile = new JMenu("File");
         menuBar.add(mnFile);
 
-        JMenuItem mntmToXml = new JMenuItem("Export to JSON");
+        JMenuItem mntmToXml = new JMenuItem("Export environment to JSON");
         mntmToXml.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
@@ -170,7 +170,7 @@ public class TrafficSimulationView {
         });
         mnFile.add(mntmToXml);
 
-        JMenuItem mntmFromXml = new JMenuItem("Import from JSON");
+        JMenuItem mntmFromXml = new JMenuItem("Import environment from JSON");
         mntmFromXml.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
@@ -320,6 +320,31 @@ public class TrafficSimulationView {
         startMenuItem = new JMenuItem("Start");
         startMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+
+                if ((intersections == null || intersections.isEmpty()) &&
+                        (segments == null || segments.isEmpty())) {
+                    JOptionPane.showMessageDialog(frame,
+                            "Please create or import an existing simulation environment!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (trafficFlows == null || trafficFlows.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame,
+                            "Please provide a tarffic flow config file!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (trafficLightPhaseses == null || trafficLightPhaseses.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame,
+                            "Please provide a traffic lights config file!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                     @Override
