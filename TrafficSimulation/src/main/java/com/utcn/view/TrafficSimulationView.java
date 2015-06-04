@@ -332,7 +332,7 @@ public class TrafficSimulationView {
 
                 if (trafficFlows == null || trafficFlows.isEmpty()) {
                     JOptionPane.showMessageDialog(frame,
-                            "Please provide a tarffic flow config file!",
+                            "Please provide a traffic flow config file!",
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;
