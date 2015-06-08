@@ -25,12 +25,19 @@ public class TrafficLightsConfiguratorController {
         public void actionPerformed(ActionEvent e) {
             List<TrafficLightPhases> phasesList = new ArrayList<>();
             for (Map.Entry pair : TrafficLightsConfiguratorView.phasesTextFields.entrySet()) {
-
-                phasesList.add(new TrafficLightPhases((Integer) pair.getKey(),
-                        Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(0)).getText()),
-                        Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(1)).getText()),
-                        Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(2)).getText()),
-                        Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(3)).getText())));
+                try {
+                    phasesList.add(new TrafficLightPhases((Integer) pair.getKey(),
+                            Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(0)).getText()),
+                            Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(1)).getText()),
+                            Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(2)).getText()),
+                            Integer.valueOf(((JTextField) ((ArrayList) pair.getValue()).get(3)).getText())));
+                } catch (NumberFormatException nfe) {
+                    JOptionPane.showMessageDialog(null,
+                            "Invalid input!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
 
             JFileChooser fc = new JFileChooser();
