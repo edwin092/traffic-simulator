@@ -3,6 +3,9 @@ package com.utcn.bl;
 
 import com.utcn.models.StandardEngine;
 import com.utcn.models.Vehicle;
+import com.utcn.utils.TrafficSimulationUtil;
+
+import java.awt.*;
 
 /**
  *
@@ -26,6 +29,9 @@ public class VehicleGenerator {
         vehicle.setId(currentId);
         vehicle.setEngine(new StandardEngine());
         vehicle.setSize(Vehicle.SIZE);
+        vehicle.setColor(new Color(TrafficSimulationUtil.randInt(0, 255),
+                TrafficSimulationUtil.randInt(0, 255),
+                TrafficSimulationUtil.randInt(0, 255)));
 
         return vehicle;
     }

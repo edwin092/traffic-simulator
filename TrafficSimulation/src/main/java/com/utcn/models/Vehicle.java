@@ -2,6 +2,7 @@ package com.utcn.models;
 
 import com.utcn.utils.TrafficSimulationUtil;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,16 @@ public class Vehicle {
     private Engine engine;
     // the size of the vehicle
     private double size;
+    // the color of the vehicle
+    private Color color;
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
 
     public Vehicle() {
         routeList = new ArrayList<>();

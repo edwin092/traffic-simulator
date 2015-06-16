@@ -16,6 +16,7 @@ import com.utcn.models.Segment;
 import com.utcn.models.Vehicle;
 import com.utcn.optimization.geneticalgorithm.view.GeneticAlgorithmView;
 import com.utcn.statistics.IntersectionStatistics;
+import com.utcn.statistics.IntersectionStatisticsManager;
 import com.utcn.statistics.VehicleStatisticsManager;
 import com.utcn.utils.SimulationGraph;
 import com.utcn.utils.TrafficSimulationUtil;
@@ -97,6 +98,7 @@ public class TrafficSimulationView {
 
     // statistics
     private VehicleStatisticsManager vehicleStatisticsManager;
+    private IntersectionStatisticsManager intersectionStatisticsManager;
 
     // arrows images for traffic lights
     private BufferedImage arrowGreenLeft;
@@ -1005,6 +1007,10 @@ public class TrafficSimulationView {
         vehicleLabels = new CopyOnWriteArrayList<>();
 
         vehicleStatisticsManager = new VehicleStatisticsManager();
+        intersectionStatisticsManager = new IntersectionStatisticsManager();
+        for(IntersectionStatistics intStats : intersectionStatisticsManager.getIntersectionStatisticsList() ) {
+            intStats.setSimulationTime(SIMULATION_TIME);
+        }
 
         // reset segment vehicles
         for (Segment segment : segments) {
@@ -1049,6 +1055,15 @@ public class TrafficSimulationView {
                     }
                 }
 
+                /*for (Segment segment : segments) {
+                    for (Vehicle veh : segment.getVehicles()) {
+                        if (veh.getSpeed() == 0) {
+                            intersectionStatisticsManager.incrementIntersectionWaitingTime(segment.getIntersectionTo().getId());
+                            break;
+                        }
+                    }
+                }*/
+
                 // increment counter
                 globalCounter++;
             }
@@ -1064,10 +1079,7 @@ public class TrafficSimulationView {
 
 //                    JLabel lblO = new JLabel(String.valueOf(veh.getId()));
                         JLabel lblO = new JLabel("O");
-                        // TODO move this into Vehicle entity
-                        lblO.setForeground(new Color(TrafficSimulationUtil.randInt(0, 255),
-                                TrafficSimulationUtil.randInt(0, 255),
-                                TrafficSimulationUtil.randInt(0, 255)));
+                        lblO.setForeground(veh.getColor());
 
 
                         int[] lineCoordsX = veh.getCurrentSegment()
