@@ -57,7 +57,7 @@ public class GeneticAlgorithmOptimization {
         conf.addNaturalSelector(e, false);
 
         conf.setMinimumPopSizePercent(0);
-        conf.setSelectFromPrevGen(1.0D);
+        conf.setSelectFromPrevGen(0.5D);
         conf.setKeepPopulationSizeConstant(true);
         conf.setFitnessEvaluator(new DefaultFitnessEvaluator());
         conf.setChromosomePool(new ChromosomePool());
@@ -81,7 +81,7 @@ public class GeneticAlgorithmOptimization {
 
         Gene[] intersectionGenes = new Gene[ids.size()];
 
-        // crete genes
+        // create genes
         for (int i = 0; i < ids.size(); i++) {
             CompositeGene intersectionGene = new CompositeGene();
             Gene p1 = new IntegerGene(conf, MINIMUM_PHASE_TIME, MAXIMUM_PHASE_TIME);
