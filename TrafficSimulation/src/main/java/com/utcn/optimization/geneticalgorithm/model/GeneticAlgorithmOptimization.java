@@ -28,15 +28,6 @@ public class GeneticAlgorithmOptimization {
     /**
      * Start genetic algorithm.
      *
-     * @param view                 TrafficSimulationView instance.
-     * @param populationSize       the size of the population.
-     * @param evolutions           the number of evolutions.
-     * @param mutationRate
-     * @param crossoverPercentage
-     * @param tournamentSize
-     * @param selectionProbability
-     * @return
-     * @throws InvalidConfigurationException
      */
     public static List<TrafficLightPhases> optimize(TrafficSimulationView view, int populationSize, int evolutions,
                                                     int mutationRate, double crossoverPercentage, int tournamentSize,
